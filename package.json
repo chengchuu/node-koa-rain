@@ -5,11 +5,12 @@
   "main": "src/app.js",
   "scripts": {
     "ins:npmjsorg": "npm i --registry=https://registry.npmjs.org",
+    "ins:cn": "npm i --registry=https://registry.npmmirror.com",
+    "start": "cross-env NODE_ENV=production pm2 start src/app.js --name node-koa-rain --update-env",
     "dev": "cross-env NODE_ENV=development pm2-dev start src/app.js",
     "lint": "eslint ./src/* --ext 'js' --fix",
     "_start:nodaemon": "Debug in Production",
     "start:nodaemon": "cross-env NODE_ENV=production pm2 start src/app.js --name node-koa-rain --no-autorestart --no-daemon --update-env",
-    "start": "cross-env NODE_ENV=production pm2 start src/app.js --name node-koa-rain --no-autorestart --update-env",
     "stop": "cross-env NODE_ENV=production pm2 stop node-koa-rain",
     "restart": "npm run stop && npm run start",
     "deploy": "node ./deploy.js"
