@@ -160,7 +160,7 @@ async function sRobotSend ({ read_card_date, nick_name, book_name, content, img,
   return sRobotSendNews({
     title: `${date}${achievementTitle}${nick_name} ${genBookName(book_name)}`,
     description: content || '',
-    url: 'https://tool.mazey.net/rabbit-read/?from=robot#/home',
+    url: 'https://i.mazey.net/x/nut-read/?from=robot#/home',
     picurl: img || 'https://i.mazey.net/asset/read/rabbitReadBanner-534x228.jpg',
     key: alias2Key.get('readKey'),
     immediately: true,
