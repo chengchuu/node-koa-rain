@@ -1,7 +1,5 @@
 const { sqlIns } = require('../../entities/orm');
 const { DataTypes } = require('sequelize');
-const { MazeyGame } = require('./game');
-const { MazeyTag } = require('./tag');
 const MazeyGameTag = sqlIns.define(
   'MazeyGameTag',
   {

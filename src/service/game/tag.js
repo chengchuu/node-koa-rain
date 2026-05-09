@@ -2,8 +2,9 @@ const { err } = require('../../entities/err');
 const { rsp } = require('../../entities/response');
 const { mAddNewTags, mQueryOldTags } = require('../../model/game/tag');
 const { mAddNewGameTags } = require('../../model/game/game');
-const { sRobotRemindForConfirmTag } = require('../../service/robot/robot');
+const { sRobotRemindForConfirmTag } = require('../robot/robot');
 const Joi = require('joi');
+const { url } = require('koa-router');
 async function sIsAddNewTags (ctx, { user_id, user_name, game_id, tag_name }) {
   const jwtToken = ctx.state.user;
   let id = user_id || (jwtToken && jwtToken.data ? jwtToken.data.user_id : '');
@@ -28,6 +29,11 @@ async function sIsAddNewTags (ctx, { user_id, user_name, game_id, tag_name }) {
     }
   }
   console.log('oldTags', oldTags, 'newTags', newTags);
+  let url = 'localhost:3224';
+  if (ctx.request && ctx.request.header) {
+    url = `${ctx.request.header.host}`;
+  }
+  console.log('url', url);
   if (newTags.length > 0) {
     let params = {
       ctx,
@@ -41,7 +47,7 @@ async function sIsAddNewTags (ctx, { user_id, user_name, game_id, tag_name }) {
       contents: [
         {
           name: 'host',
-          value: 'localhost:3224',
+          value: url,
         },
         {
           name: 'url',

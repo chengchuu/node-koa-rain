@@ -320,7 +320,7 @@ async function sRobotRemindForConfirmTag ({ ctx, user_id, user_name, game_id, ta
   // Repeat - begin
   if (repeat) {
     repeatSend(() => {
-      sRobotRemindForConfirmTag({ ctx, user_id, user_name, tags, tagList, contents, extra, key: '', alias: 'TestUrl', repeat: false });
+      sRobotRemindForConfirmTag({ ctx, user_id, user_name, game_id, tags, tagList, contents, extra, key: '', alias: 'TestUrl', repeat: false });
     });
   }
   // Repeat - end
@@ -391,12 +391,10 @@ async function sRobotRemindForConfirmTag ({ ctx, user_id, user_name, game_id, ta
   let IsExistContentRes = null;
   let isExist = false;
   if (logContent) {
-    console.log('日志logContent', logContent);
     IsExistContentRes = await sIsExistContent({ content: logContent });
     ({
       data: { isExist },
     } = IsExistContentRes);
-    console.log('logContent', logContent);
     sAddLog({ ctx, log_type: tags[0], content: logContent });
   }
   if (!isExist || (alias === 'TestUrl' && repeat === false)) {
@@ -485,7 +483,6 @@ async function sRobotRemindForCommonTag ({ ctx, tags = [], contents = [], extra 
     ({
       data: { isExist },
     } = IsExistContentRes);
-    console.log('logContent', logContent);
     sAddLog({ ctx, log_type: tags[0], content: logContent });
   }
   if (!isExist || (alias === 'TestUrl' && repeat === false)) {

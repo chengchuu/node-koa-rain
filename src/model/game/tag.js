@@ -69,7 +69,6 @@ async function mQueryOldTags ({ tag_name }) {
       tag_name: tag_name,
     },
   });
-  console.log('已经有的标签', tags);
   return rsp({ data: tags });
 }
 MazeyTag.sync();

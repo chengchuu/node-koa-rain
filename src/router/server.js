@@ -29,13 +29,13 @@ const { WeatherConf } = require('./../config/index');
 const { sGetRobotKeyByAlias } = require('../service/robot');
 const { sGetWeatherDaily } = require('../service/weather');
 const { sGetToken, sGetTicket } = require('../service/weixin');
-const { sAddNewGame, sQueryAllGame, sQueryGame } = require('../service/score/game');
-const { sAddNewScore, sQueryAllScore } = require('../service/score/score');
-const { sAddNewTags, sIsAddNewTags } = require('../service/score/tag');
+const { sAddNewGame, sQueryAllGame, sQueryGame } = require('../service/game/game');
+const { sAddNewScore, sQueryAllScore } = require('../service/game/score');
+const { sAddNewTags, sIsAddNewTags } = require('../service/game/tag');
 const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
 // 校验
 server
-  // Ping
+  // Ping (非登录接口)
   .get('/ping', async ctx => {
     ctx.body = 'ok';
   })
@@ -138,13 +138,12 @@ server
   .get('/query-visitors', async ctx => {
     ctx.body = await getLatestVisitors();
   })
-  // Upload
+  // Upload (需登录接口)
   .post('/upload', async ctx => {
     ctx.body = await upload(ctx);
   })
   .get('/upload/query', async ctx => {
-    const { token } = ctx.query;
-    ctx.body = await getAssets({ ctx, token, asset_operator_id: Number(ctx.query.uid) });
+    ctx.body = await getAssets({ ctx, asset_operator_id: Number(ctx.query.uid) });
   })
   .post('/upload/remove', async ctx => {
     ctx.body = await sRemoveAsset(ctx);
@@ -247,7 +246,7 @@ server
     const { game_id, tag_name } = ctx.request.body;
     ctx.body = await sIsAddNewTags(ctx, { game_id, tag_name });
   })
-  .get('/tag/add', async ctx => {
+  .get('/tag/save', async ctx => {
     const { user_id, user_name, game_id, tag_name, tag_status } = ctx.query;
     ctx.body = await sAddNewTags(ctx, { user_id, user_name, game_id, tag_name, tag_status });
   });

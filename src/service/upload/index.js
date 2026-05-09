@@ -61,7 +61,6 @@ async function upload (ctx) {
     fileName = rs;
   }
   fileName = fileName.replace(/[\u4e00-\u9fa5]/g, a => {
-    console.log('a', a);
     return 'i';
   }); // 判断有汉字就进行unique
   let fileArray = fileName.split('.');
@@ -75,7 +74,7 @@ async function upload (ctx) {
   const status = new Promise(resolve => {
     ok = resolve;
   }, console.error);
-  let cdnDomain = process.env.NODE_ENV === 'development' ? 'http://localhost:8224/' : `${assetsBaseUrl}/`;
+  let cdnDomain = process.env.NODE_ENV === 'development' ? 'http://localhost:3224/' : `${assetsBaseUrl}/`;
   let ossResult = '';
   // 生成入库字段
   const assetLink = ''; // `https://mazey.cn/assets/${fileName}`;
@@ -113,12 +112,13 @@ async function upload (ctx) {
 }
 
 // 查询静态资源
-async function getAssets ({ ctx, token, asset_operator_id }) {
+async function getAssets ({ ctx, asset_operator_id }) {
+  const jwtToken = ctx.state.user || { data: {} };
   console.log('_ asset_operator_id:', asset_operator_id);
   const limit = Boolean(ctx.query.limit) && Number(ctx.query.limit);
-  const assets = await getAsset({ asset_oss_id: Number(ctx.query.oss_id), token, limit });
+  const assets = await getAsset({ asset_oss_id: Number(ctx.query.oss_id), user_id: jwtToken.data.user_id, limit });
   if (!assets) {
-    return err({ message: '查询错误' });
+    return err({ message: '未找到静态资源' });
   }
   const ret = assets.map(ossRsp);
   return rsp({ data: { assets: ret } });
