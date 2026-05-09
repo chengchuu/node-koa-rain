@@ -55,15 +55,37 @@ async function queryShortLink (ctx, { tiny_key }) {
   });
 }
 
+// 获取短链接缓存
+function sGetLinkMap (ctx) {
+  const { linkMap } = ctx;
+  if (!(linkMap instanceof Map)) {
+    return rsp({
+      data: {
+        size: 0,
+        linkMap: [],
+      },
+    });
+  }
+  return rsp({
+    data: {
+      size: linkMap.size,
+      linkMap: Array.from(linkMap.entries()).map(([tiny_key, ori_link]) => ({
+        tiny_key,
+        ori_link,
+      })),
+    },
+  });
+}
+
 // 长链接
 async function queryOriLinkByKey (ctx, { tiny_key }) {
   let ori_link;
   let { linkMap } = ctx;
   const specialLink = new Map([
-    ['ca', 'https://tool.mazey.net/rabbit-read/#/home'], // 小兔读书会首页
-    ['cs', 'https://tool.mazey.net/rabbit-read/?from=robot#/home'], // 小兔读书会首页（机器人导流）
-    ['cp', 'https://tool.mazey.net/rabbit-read/#/note'], // 小兔读书会笔记
-    ['cr', 'https://tool.mazey.net/rabbit-read/#/statistic'], // 小兔读书会数据统计
+    ['ca', 'https://i.mazey.net/x/nut-read/#/home'], // 小兔读书会首页
+    ['cs', 'https://i.mazey.net/x/nut-read/?from=robot#/home'], // 小兔读书会首页（机器人导流）
+    ['cp', 'https://i.mazey.net/x/nut-read/#/note'], // 小兔读书会笔记
+    ['cr', 'https://i.mazey.net/x/nut-read/#/statistic'], // 小兔读书会数据统计
     ['aa', 'https://rabbitimage.rabbitcdn.com/asset/read/#rabbit.png'], // test
   ]);
   if (specialLink.has(tiny_key)) {
@@ -93,6 +115,7 @@ async function queryOriLinkByKey (ctx, { tiny_key }) {
 
 module.exports = {
   sGenerateShortLink,
+  sGetLinkMap,
   queryShortLink,
   queryOriLinkByKey,
 };
