@@ -45,12 +45,34 @@ async function queryShortLink (ctx, { tiny_key }) {
   }
   const queryTinyLinkResut = await queryTinyLink({ tiny_key });
   if (queryTinyLinkResut) {
-    ctx.linkMap.set(tiny_key, queryTinyLinkResut.ori_link);
+    linkMap.set(tiny_key, queryTinyLinkResut.ori_link);
     mUpdateTinyLink({ tiny_key });
   }
   return rsp({
     data: {
       queryTinyLinkResut,
+    },
+  });
+}
+
+// 获取短链接缓存
+function sGetLinkMap (ctx) {
+  const { linkMap } = ctx;
+  if (!(linkMap instanceof Map)) {
+    return rsp({
+      data: {
+        size: 0,
+        linkMap: [],
+      },
+    });
+  }
+  return rsp({
+    data: {
+      size: linkMap.size,
+      linkMap: Array.from(linkMap.entries()).map(([tiny_key, ori_link]) => ({
+        tiny_key,
+        ori_link,
+      })),
     },
   });
 }
@@ -80,7 +102,7 @@ async function queryOriLinkByKey (ctx, { tiny_key }) {
       ({ ori_link = 'https://blog.mazey.net/tiny' } = (await queryTinyLink({ tiny_key })) || {});
       if (ori_link) {
         mUpdateTinyLink({ tiny_key });
-        ctx.linkMap.set(tiny_key, ori_link);
+        linkMap.set(tiny_key, ori_link);
       }
     }
   }
@@ -93,6 +115,7 @@ async function queryOriLinkByKey (ctx, { tiny_key }) {
 
 module.exports = {
   sGenerateShortLink,
+  sGetLinkMap,
   queryShortLink,
   queryOriLinkByKey,
 };
