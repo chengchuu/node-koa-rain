@@ -114,7 +114,7 @@ async function upload (ctx) {
 // 查询静态资源
 async function getAssets ({ ctx, asset_operator_id }) {
   const jwtToken = ctx.state.user || { data: {} };
-  console.log('_ asset_operator_id:', asset_operator_id, jwtToken);
+  console.log('_ asset_operator_id:', asset_operator_id);
   const limit = Boolean(ctx.query.limit) && Number(ctx.query.limit);
   const assets = await getAsset({ asset_oss_id: Number(ctx.query.oss_id), user_id: jwtToken.data.user_id, limit });
   if (!assets) {
