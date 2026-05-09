@@ -16,6 +16,13 @@ The app is a single Node.js service with a mostly consistent layering:
 
 `router -> service -> model -> MySQL / external API`
 
+## Runtime
+
+- Node.js `10.x`
+- Koa `2.x`
+
+When editing code, keep syntax and library usage compatible with Node.js 10 and the current Koa 2 middleware style.
+
 ## Entry Points
 
 - Runtime entry: `src/app.js`

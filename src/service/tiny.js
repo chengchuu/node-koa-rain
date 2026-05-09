@@ -55,6 +55,28 @@ async function queryShortLink (ctx, { tiny_key }) {
   });
 }
 
+// 获取短链接缓存
+function sGetLinkMap (ctx) {
+  const { linkMap } = ctx;
+  if (!(linkMap instanceof Map)) {
+    return rsp({
+      data: {
+        size: 0,
+        linkMap: [],
+      },
+    });
+  }
+  return rsp({
+    data: {
+      size: linkMap.size,
+      linkMap: Array.from(linkMap.entries()).map(([tiny_key, ori_link]) => ({
+        tiny_key,
+        ori_link,
+      })),
+    },
+  });
+}
+
 // 长链接
 async function queryOriLinkByKey (ctx, { tiny_key }) {
   let ori_link;
@@ -93,6 +115,7 @@ async function queryOriLinkByKey (ctx, { tiny_key }) {
 
 module.exports = {
   sGenerateShortLink,
+  sGetLinkMap,
   queryShortLink,
   queryOriLinkByKey,
 };
