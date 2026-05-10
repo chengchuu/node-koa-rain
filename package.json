@@ -41,6 +41,7 @@
     "optimist": "^0.6.1",
     "request-promise": "^2.0.1",
     "say": "^0.16.0",
+    "one-time": "^0.0.4",
     "sequelize": "^6.3.4"
   },
   "devDependencies": {

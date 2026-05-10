@@ -19,7 +19,7 @@ async function upload (ctx) {
   console.log('ctx', ctx.state.user);
   const jwtToken = ctx.state.user;
   const file = ctx.request.files.file; // 获取上传文件
-  const afferentTarget = ctx.request.target;
+  const afferentTarget = (ctx.request.body && ctx.request.body.target) || ctx.query.target || ctx.request.target;
   if (!file.type) {
     return rsp({
       message: '请上传图片',
@@ -210,7 +210,7 @@ async function sSynthesize (ctx, { content }) {
   const showLink = `${cdnDomain}${target}/${fileName}`;
   // say.setEngine('say-mp3', 'com.apple.speech.synthesis.voice.ting-ting');
   try {
-    await say.export(content, 'Microsoft Huihui Desktop', 1, filePath);
+    say.export(content, 'Microsoft Huihui Desktop', 1, filePath);
     return rsp({ data: showLink });
   } catch (error) {
     return err({ info: error });
