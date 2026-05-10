@@ -25,8 +25,12 @@ async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
       data: { ip },
     } = await sGetIP(ctx));
   }
+  console.log('sAddLog, 新增日志:', { tempType, content, ip, isEncode });
   const AddLogRes = await mAddLog({ log_type: tempType, ip, content });
   if (AddLogRes.ret === 0) {
+    if (isEncode) {
+      return rsp({ message: 'success', data: { content } });
+    }
     return AddLogRes;
   }
   return AddLogRes;

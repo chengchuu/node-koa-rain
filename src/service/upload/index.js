@@ -19,7 +19,7 @@ async function upload (ctx) {
   console.log('ctx', ctx.state.user);
   const jwtToken = ctx.state.user;
   const file = ctx.request.files.file; // 获取上传文件
-  const afferentTarget = ctx.request.target;
+  const afferentTarget = (ctx.request.body && ctx.request.body.target) || ctx.query.target || ctx.request.target;
   if (!file.type) {
     return rsp({
       message: '请上传图片',
@@ -117,7 +117,7 @@ async function upload (ctx) {
 // 查询静态资源
 async function getAssets ({ ctx, asset_operator_id }) {
   const jwtToken = ctx.state.user || { data: {} };
-  console.log('_ asset_operator_id:', asset_operator_id, jwtToken);
+  console.log('_ asset_operator_id:', asset_operator_id);
   const limit = Boolean(ctx.query.limit) && Number(ctx.query.limit);
   const assets = await getAsset({ asset_oss_id: Number(ctx.query.oss_id), user_id: jwtToken.data.user_id, limit });
   if (!assets) {
@@ -210,7 +210,7 @@ async function sSynthesize (ctx, { content }) {
   const showLink = `${cdnDomain}${target}/${fileName}`;
   // say.setEngine('say-mp3', 'com.apple.speech.synthesis.voice.ting-ting');
   try {
-    await say.export(content, 'Microsoft Huihui Desktop', 1, filePath);
+    say.export(content, 'Microsoft Huihui Desktop', 1, filePath);
     return rsp({ data: showLink });
   } catch (error) {
     return err({ info: error });

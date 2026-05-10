@@ -4,7 +4,7 @@ const { upload, getAssets, sGetOSSConfs, sNewOSSConf, sRemoveAsset, sNewGetOSSCo
 const { report } = require('./../model/report');
 const { sGetUserInfo, sLogin, sGenToken, sAddNewUser } = require('./../service/user');
 const { sUpdateCodeStatus } = require('./../service/code');
-const { sGenerateShortLink, queryShortLink } = require('./../service/tiny');
+const { sGenerateShortLink, sGetLinkMap, queryShortLink } = require('./../service/tiny');
 const {
   sPunchCard,
   sGetFeeds,
@@ -102,6 +102,9 @@ server
   .get('/query/short-link', async ctx => {
     const { tiny_key } = ctx.query;
     ctx.body = await queryShortLink(ctx, { tiny_key });
+  })
+  .get('/get/link-map', async ctx => {
+    ctx.body = await sGetLinkMap(ctx);
   })
   // Weather
   .get('/weather/now', async ctx => {
