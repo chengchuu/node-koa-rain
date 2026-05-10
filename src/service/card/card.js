@@ -215,6 +215,7 @@ async function sGetAddressInfo ({ order_number }) {
     return rsp({ data: addressData.apiResultData });
   } catch (error) {
     console.error('sf error:', error);
+    return err({ message: '接口错误' });
   }
 }
 

@@ -1,7 +1,7 @@
 // 卡号 密码 状态(0, 1)
 const { sqlIns } = require('../../entities/orm');
 const { DataTypes } = require('sequelize');
-const { rsp, rspPage } = require('../../entities/response');
+const { rsp } = require('../../entities/response');
 const { err } = require('../../entities/error');
 const MazeyAddress = sqlIns.define(
   'MazeyAddress',
@@ -46,7 +46,7 @@ const MazeyAddress = sqlIns.define(
     },
     // 存一下卡号
     card_number: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(50),
     },
   },
   {
