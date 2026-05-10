@@ -13,6 +13,26 @@ const axios = require('axios');
 let querystring = require('querystring');
 const uuid = require('uuid');
 const { logistics } = require('../../config/env.development');
+
+async function sCheckCardAccess ({ card_number, card_password }) {
+  const schema = Joi.object({
+    card_number: Joi.string()
+      .required()
+      .error(new Error('请输入卡号')),
+    card_password: Joi.string()
+      .required()
+      .error(new Error('请输入密码')),
+  });
+  const { error } = schema.validate({
+    card_number,
+    card_password,
+  });
+  if (error) {
+    return err({ message: error.message });
+  }
+  return mCheckCardByNumber({ card_number, card_password });
+}
+
 async function sUploadCard (ctx) {
   const file = ctx.request.files.file; // 获取上传文件
   const filePath = file.path;
@@ -72,25 +92,13 @@ async function sBatchAddCrab (ctx) {
   return mBatchAddCrabRes;
 }
 async function sGetCardByNumber ({ card_number, card_password }) {
-  const schema = Joi.object({
-    card_number: Joi.string()
-      .required()
-      .error(new Error('请输入卡号')),
-    card_password: Joi.string()
-      .required()
-      .error(new Error('请输入密码')),
-  });
-  const { error } = schema.validate({
-    card_number,
-    card_password,
-  });
-  if (error) {
-    return err({ message: error.message });
-  }
-  const mGetCardByNumberRes = await mCheckCardByNumber({ card_number, card_password });
-  return mGetCardByNumberRes;
+  return sCheckCardAccess({ card_number, card_password });
 }
-async function sGetCrabByNumber ({ card_number }) {
+async function sGetCrabByNumber ({ card_number, card_password }) {
+  const CheckCardAccessRes = await sCheckCardAccess({ card_number, card_password });
+  if (CheckCardAccessRes.ret !== 0) {
+    return CheckCardAccessRes;
+  }
   const schema = Joi.object({
     card_number: Joi.string()
       .required()
@@ -105,12 +113,15 @@ async function sGetCrabByNumber ({ card_number }) {
   const mGetCrabByNumberRes = await mGetCardByNumber({ card_number });
   return mGetCrabByNumberRes;
 }
-async function sAddAddressByNumber ({ card_number, address_id, address_detail, address_user, address_mobile, address_date }) {
+async function sAddAddressByNumber ({ card_number, card_password, address_id, address_detail, address_user, address_mobile, address_date }) {
   console.log('address_detail', card_number, address_detail, address_user, address_mobile, address_date);
   const schema = Joi.object({
     card_number: Joi.string()
       .required()
       .error(new Error('请输入卡号')),
+    card_password: Joi.string()
+      .required()
+      .error(new Error('请输入密码')),
     address_detail: Joi.string()
       .required()
       .error(new Error('请输入详细地址')),
@@ -126,6 +137,7 @@ async function sAddAddressByNumber ({ card_number, address_id, address_detail, a
   });
   const { error } = schema.validate({
     card_number,
+    card_password,
     address_detail,
     address_user,
     address_mobile,
@@ -134,8 +146,15 @@ async function sAddAddressByNumber ({ card_number, address_id, address_detail, a
   if (error) {
     return err({ message: error.message });
   }
+  const CheckCardAccessRes = await sCheckCardAccess({ card_number, card_password });
+  if (CheckCardAccessRes.ret !== 0) {
+    return CheckCardAccessRes;
+  }
   if (address_id) {
     const mUpdateAddressRes = await mUpdateAddress({ card_number, address_id: address_id, address_detail, address_user, address_mobile, address_date });
+    if (mUpdateAddressRes.ret !== 0) {
+      return mUpdateAddressRes;
+    }
     await sRobotRemindCardAddress({ card_number, address_detail, address_user, address_mobile, address_date });
     return mUpdateAddressRes;
   }
@@ -145,25 +164,39 @@ async function sAddAddressByNumber ({ card_number, address_id, address_detail, a
     const { MazeyAddress } = mGetCrabByNumberRes.data;
     if (MazeyAddress && MazeyAddress.address_id) {
       const mUpdateAddressRes = await mUpdateAddress({ card_number, address_id: MazeyAddress.address_id, address_detail, address_user, address_mobile, address_date });
+      if (mUpdateAddressRes.ret !== 0) {
+        return mUpdateAddressRes;
+      }
       await sRobotRemindCardAddress({ card_number, address_detail, address_user, address_mobile, address_date });
       return mUpdateAddressRes;
     }
     const mAddAddressByNumberRes = await mAddAddressByNumber({ card_number, address_detail, address_user, address_mobile, address_date });
-    if (mAddAddressByNumberRes) {
+    if (mAddAddressByNumberRes.ret === 0) {
       const mUpdateCardRes = await mUpdateCard({ card_number, address_id: mAddAddressByNumberRes.data.address_id });
+      if (mUpdateCardRes.ret !== 0) {
+        return mUpdateCardRes;
+      }
       await sRobotRemindCardAddress({ card_number, address_detail, address_user, address_mobile, address_date });
       return mUpdateCardRes;
     }
+    return mAddAddressByNumberRes;
   }
   return err({ message: '失败' });
 }
 async function sUpdateCardByAddressNumber ({ address_id, address_category, address_number }) {
   // 填入单号的同时修改卡为已使用
-  await mUpdateAddress({ address_id, address_category, address_number });
+  const UpdateAddressRes = await mUpdateAddress({ address_id, address_category, address_number });
+  if (UpdateAddressRes.ret !== 0) {
+    return UpdateAddressRes;
+  }
   const sUpdateCardByAddressRes = await mUpdateCardByAddress({ address_id });
   return sUpdateCardByAddressRes;
 }
-async function sGetAddressByNumber ({ card_number }) {
+async function sGetAddressByNumber ({ card_number, card_password }) {
+  const CheckCardAccessRes = await sCheckCardAccess({ card_number, card_password });
+  if (CheckCardAccessRes.ret !== 0) {
+    return CheckCardAccessRes;
+  }
   // 根据卡号获取
   const mGetAddressByNumberRes = await mGetAddressByNumber({ card_number });
   return mGetAddressByNumberRes;
@@ -171,6 +204,9 @@ async function sGetAddressByNumber ({ card_number }) {
 
 async function sGetAddressInfo ({ order_number }) {
   // 需要根据卡号查一下快递单号吗?
+  if (!logistics || !logistics.partnerID || !logistics.sandboxCode) {
+    return err({ message: '缺少物流配置' });
+  }
   let tokenParams = {
     partnerID: logistics.partnerID,
     secret: logistics.sandboxCode,

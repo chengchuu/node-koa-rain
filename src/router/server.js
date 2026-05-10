@@ -281,13 +281,13 @@ server
   })
   // 给某个卡号增加发货地址
   .post('/card/add-address', async ctx => {
-    const { card_number, address_detail, address_user, address_mobile, address_date } = ctx.request.body;
-    ctx.body = await sAddAddressByNumber({ card_number, address_detail, address_user, address_mobile, address_date });
+    const { card_number, card_password, address_detail, address_user, address_mobile, address_date } = ctx.request.body;
+    ctx.body = await sAddAddressByNumber({ card_number, card_password, address_detail, address_user, address_mobile, address_date });
   })
   // 获取某卡号的收货地址
   .post('/card/get-address', async ctx => {
-    const { card_number } = ctx.request.body;
-    ctx.body = await sGetAddressByNumber({ card_number });
+    const { card_number, card_password } = ctx.request.body;
+    ctx.body = await sGetAddressByNumber({ card_number, card_password });
   })
   // 给某卡号地址增加快递单号
   .post('/card/update-address', async ctx => {
@@ -296,8 +296,8 @@ server
   })
   // 获取卡的详情
   .post('/card/get-crab', async ctx => {
-    const { card_number } = ctx.request.body;
-    ctx.body = await sGetCrabByNumber({ card_number });
+    const { card_number, card_password } = ctx.request.body;
+    ctx.body = await sGetCrabByNumber({ card_number, card_password });
   })
   // 获取物流信息
   .post('/card/get-logistics', async ctx => {

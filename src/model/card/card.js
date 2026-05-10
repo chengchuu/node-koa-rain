@@ -89,10 +89,10 @@ async function mUpdateCard ({ address_id, card_number }) {
       },
     }
   ).catch(console.error);
-  if (!ret) {
+  if (!Array.isArray(ret) || ret[0] === 0) {
     return err({ message: '该卡号不存在' });
   }
-  return rsp({ data: ret.dataValues });
+  return rsp({ data: { affectedRows: ret[0] } });
 }
 async function mUpdateCardByAddress ({ address_id }) {
   const ret = await MazeyCard.update(
@@ -105,10 +105,10 @@ async function mUpdateCardByAddress ({ address_id }) {
       },
     }
   ).catch(console.error);
-  if (!ret) {
+  if (!Array.isArray(ret) || ret[0] === 0) {
     return err({ message: '该卡号不存在' });
   }
-  return rsp({ data: ret.dataValues });
+  return rsp({ data: { affectedRows: ret[0] } });
 }
 async function mBatchAddCard (data) {
   const ret = await MazeyCard.bulkCreate(data);

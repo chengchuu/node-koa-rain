@@ -95,10 +95,10 @@ async function mUpdateAddress ({ card_number, address_id, address_detail, addres
         },
       }
     ).catch(console.error);
-    if (!ret) {
+    if (!Array.isArray(ret) || ret[0] === 0) {
       return err({ message: '该卡号不存在' });
     }
-    return rsp({ data: ret.dataValues });
+    return rsp({ data: { affectedRows: ret[0] } });
   } else {
     console.log('我执行了嘛------------', card_number, address_id);
     const ret = await MazeyAddress.update(
@@ -115,10 +115,10 @@ async function mUpdateAddress ({ card_number, address_id, address_detail, addres
       }
     ).catch(console.error);
     console.log('ret', ret);
-    if (ret) {
-      return rsp({ data: {} });
+    if (Array.isArray(ret) && ret[0] > 0) {
+      return rsp({ data: { affectedRows: ret[0] } });
     }
-    return err();
+    return err({ message: '该卡号不存在' });
   }
 }
 
