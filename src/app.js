@@ -22,6 +22,9 @@ const router = new Router();
 mkdir.mkdirs('temp', err => {
   console.log('err', err); // 错误的话，直接打印如果地址跟
 });
+mkdir.mkdirs('video', err => {
+  console.log('err', err); // 错误的话，直接打印如果地址跟
+});
 app.use(authMiddleware);
 // 上传文件
 app.use(

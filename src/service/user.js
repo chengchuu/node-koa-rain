@@ -134,7 +134,6 @@ async function sAddNewUser (ctx, nick_name, real_name = '', user_password = '', 
       location: { city },
     },
   } = GetUserInfoRes;
-  console.log('GetUserInfoRes------城市信息', GetUserInfoRes);
   // 新增用户
   const {
     data: { token: requestPassword },

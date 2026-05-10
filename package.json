@@ -24,6 +24,7 @@
     "child_process": "^1.0.2",
     "crypto": "0.0.3",
     "date-fns": "^2.16.1",
+    "gtts": "^0.2.1",
     "joi": "^17.9.1",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.11.0",
@@ -37,6 +38,7 @@
     "mysql2": "^2.1.0",
     "node-schedule": "^2.0.0",
     "nodemailer": "^6.9.1",
+    "one-time": "0.0.4",
     "optimist": "^0.6.1",
     "request-promise": "^2.0.1",
     "sequelize": "^6.3.4"

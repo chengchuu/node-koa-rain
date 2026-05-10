@@ -146,7 +146,7 @@ async function queryAllGame ({ currentPage, pageSize }) {
   const ret = await MazeyGame.findAll({
     limit: pageSize,
     offset: offset,
-    order: [['create_at', 'DESC']],
+    order: [['game_score', 'DESC']],
     include: [
       {
         model: MazeyTag,

@@ -5,10 +5,16 @@ const { sRobotSendColorText, sGetRobotKeyByAlias } = require('./robot/index.js')
 const { sGetIP } = require('./user');
 
 // 新增日志 - 使用驼峰，遗弃下划线 log_type
-async function sAddLog ({ ctx, logType, content, log_type }) {
+async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
   const tempType = logType || log_type;
   if (typeof content === 'object') {
     content = JSON.stringify(content);
+  }
+  if (isEncode) {
+    // 对base64的数据进行解码
+    let buff = Buffer.from(content, 'base64');
+    content = buff.toString('utf-8');
+    // content = buff.toString('base64');
   }
   if (content && content.length >= 500) {
     return err({ message: '内容长度不能超过 500' });
@@ -19,8 +25,12 @@ async function sAddLog ({ ctx, logType, content, log_type }) {
       data: { ip },
     } = await sGetIP(ctx));
   }
+  console.log('sAddLog, 新增日志:', { tempType, content, ip, isEncode });
   const AddLogRes = await mAddLog({ log_type: tempType, ip, content });
   if (AddLogRes.ret === 0) {
+    if (isEncode) {
+      return rsp({ message: 'success', data: { content } });
+    }
     return AddLogRes;
   }
   return AddLogRes;

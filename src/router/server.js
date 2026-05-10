@@ -1,6 +1,6 @@
 const { getCityInfo } = require('./../service/ip');
 const { getLatestVisitors, sAgentGet, sAgentPut, sAgentAny, sShowRequestInfo } = require('./../service/visitor');
-const { upload, getAssets, sGetOSSConfs, sNewOSSConf, sRemoveAsset, sNewGetOSSConfs, sAddOSSConf } = require('./../service/upload');
+const { upload, getAssets, sGetOSSConfs, sNewOSSConf, sRemoveAsset, sNewGetOSSConfs, sAddOSSConf, sSynthesize } = require('./../service/upload');
 const { report } = require('./../model/report');
 const { sGetUserInfo, sLogin, sGenToken, sAddNewUser } = require('./../service/user');
 const { sUpdateCodeStatus } = require('./../service/code');
@@ -32,6 +32,7 @@ const { sGetToken, sGetTicket } = require('../service/weixin');
 const { sAddNewGame, sQueryAllGame, sQueryGame } = require('../service/game/game');
 const { sAddNewScore, sQueryAllScore } = require('../service/game/score');
 const { sAddNewTags, sIsAddNewTags } = require('../service/game/tag');
+const { sGetChatInfo } = require('../service/chat');
 const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
 // 校验
 server
@@ -82,6 +83,10 @@ server
   .post('/log/add', async ctx => {
     const { log_type, content } = ctx.request.body;
     ctx.body = await sAddLog({ ctx, log_type, content });
+  })
+  .post('/log/bsixtyfour', async ctx => {
+    const { log_type, content } = ctx.request.body;
+    ctx.body = await sAddLog({ ctx, log_type, content, isEncode: true });
   })
   .post('/log/report-error-info', async ctx => {
     const { logType, err, pageTitle, url, alias } = ctx.request.body;
@@ -249,6 +254,15 @@ server
   .get('/tag/save', async ctx => {
     const { user_id, user_name, game_id, tag_name, tag_status } = ctx.query;
     ctx.body = await sAddNewTags(ctx, { user_id, user_name, game_id, tag_name, tag_status });
+  })
+  // 测试gpt
+  .post('/chat', async ctx => {
+    const { messages } = ctx.request.body;
+    ctx.body = await sGetChatInfo(ctx, { messages });
+  })
+  .post('/synthesize', async ctx => {
+    const { content } = ctx.request.body;
+    ctx.body = await sSynthesize(ctx, { content });
   });
 
 module.exports = server;
