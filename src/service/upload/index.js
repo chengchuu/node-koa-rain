@@ -35,7 +35,7 @@ async function upload (ctx) {
   let lastFileStr = fileStr[0] + '/' + typeStr;
   let fileUrl = afferentTarget ? `${afferentTarget}` : `assets/${lastFileStr}`;
   await mkdir.mkdirs(fileUrl, err => {
-    console.log('err', err); // 错误的话，直接打印如果地址跟
+    console.log('mkdirs fileUrl err', err); // 错误的话，直接打印如果地址跟
   });
   const target = afferentTarget || 'assets'; // 上传目录，默认 asset 生产https://i.mazey.net/assets/aaa.jpg  生产和开发区分/web/i.mazey.net/assets/aaa.jpg
   let uid = Number(ctx.query.uid) || 0;
