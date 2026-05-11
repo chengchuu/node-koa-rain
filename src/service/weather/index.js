@@ -1,10 +1,10 @@
-const WeatherApi = require('./weather');
-const { WeatherConf } = require('../../config/index');
-const { err } = require('../../entities/error');
-const { sReportErrorInfo } = require('../log');
+const WeatherApi = require("./weather");
+const { WeatherConf } = require("../../config/index");
+const { err } = require("../../entities/error");
+const { sReportErrorInfo } = require("../log");
 const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
-const { format } = require('date-fns');
-const { rsp } = require('../../entities/response');
+const { format } = require("date-fns");
+const { rsp } = require("../../entities/response");
 
 /**
  * @method sGetWeatherNow
@@ -18,7 +18,7 @@ async function sGetWeatherNow () {}
  * @param {String} location 地区 上海、北京等
  * @return {Object} 天气数据
  * */
-async function sGetWeatherDaily ({ location = 'shanghai' } = {}) {
+async function sGetWeatherDaily ({ location = "shanghai" } = {}) {
   const weatherInsRes = await weatherIns
     .getWeatherDaily(location)
     .then(function (data) {
@@ -27,18 +27,18 @@ async function sGetWeatherDaily ({ location = 'shanghai' } = {}) {
     })
     .catch(function (err) {
       // ctx.body = `getError(${err.error.status})`;
-      sReportErrorInfo({ logType: 'weather_error', err });
+      sReportErrorInfo({ logType: "weather_error", err });
     });
   if (!weatherInsRes) {
-    return err({ message: '接口错误' });
+    return err({ message: "接口错误" });
   }
   const {
-    results: [{ location: locationDetail, daily }],
+    results: [ { location: locationDetail, daily } ],
   } = weatherInsRes;
-  const dailyDate = format(Date.now(), 'yyyy-MM-dd');
+  const dailyDate = format(Date.now(), "yyyy-MM-dd");
   const dailyItems = daily.filter(v => v.date === dailyDate);
   if (!dailyItems.length) {
-    return err({ message: '数据错误' });
+    return err({ message: "数据错误" });
   }
   const thatDailyW = (dailyItems.length && dailyItems[0]) || {};
   const { text_day: dayWeatherText, text_night: nightWeatherText, high: temperatureHigh, low: temperatureLow } = thatDailyW;

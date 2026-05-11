@@ -1,9 +1,7 @@
-'use strict';
-
-const errCodeMessageMap = require('./errCodeMessageMap');
+const errCodeMessageMap = require("./errCodeMessageMap");
 
 // 错误返回格式
-function err ({ ctx, ret = 413, info = 'server_error', message = '服务器错误', stack = undefined } = {}) {
+function err ({ ctx, ret = 413, info = "server_error", message = "服务器错误", stack = undefined } = {}) {
   message = parseErrInfo({ info, message });
   const rspBody = {
     ret,

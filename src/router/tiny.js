@@ -1,9 +1,9 @@
-const Router = require('koa-router');
+const Router = require("koa-router");
 const tiny = new Router();
-const { queryOriLinkByKey } = require('./../service/tiny');
+const { queryOriLinkByKey } = require("./../service/tiny");
 
 // Visit
-tiny.get('/:key', async ctx => {
+tiny.get("/:key", async ctx => {
   const { key: tiny_key } = ctx.params;
   const {
     data: { ori_link },

@@ -1,10 +1,10 @@
 // 卡号 密码 状态(0, 1)
-const { sqlIns } = require('../../entities/orm');
-const { DataTypes } = require('sequelize');
-const { rsp } = require('../../entities/response');
-const { err } = require('../../entities/error');
+const { sqlIns } = require("../../entities/orm");
+const { DataTypes } = require("sequelize");
+const { rsp } = require("../../entities/response");
+const { err } = require("../../entities/error");
 const MazeyAddress = sqlIns.define(
-  'MazeyAddress',
+  "MazeyAddress",
   {
     address_id: {
       // 自增 ID
@@ -50,10 +50,10 @@ const MazeyAddress = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_address',
-    createdAt: 'create_at',
-    updatedAt: 'update_at',
-  }
+    tableName: "mazey_address",
+    createdAt: "create_at",
+    updatedAt: "update_at",
+  },
 );
 async function mGetAddressByNumber ({ card_number }) {
   const ret = await MazeyAddress.findOne({
@@ -63,7 +63,7 @@ async function mGetAddressByNumber ({ card_number }) {
     through: { attributes: [] },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '该卡号没有地址' });
+    return err({ message: "该卡号没有地址" });
   }
   return rsp({ data: ret.dataValues });
 }
@@ -82,7 +82,7 @@ async function mAddAddressByNumber ({ card_number, address_detail, address_user,
 }
 // 修改地址或者填写单号
 async function mUpdateAddress ({ card_number, address_id, address_detail, address_user, address_mobile, address_date, address_category, address_number }) {
-  let ret = '';
+  let ret = "";
   if (address_number) {
     ret = await MazeyAddress.update(
       {
@@ -93,14 +93,14 @@ async function mUpdateAddress ({ card_number, address_id, address_detail, addres
         where: {
           address_id,
         },
-      }
+      },
     ).catch(console.error);
     if (!Array.isArray(ret) || ret[0] === 0) {
-      return err({ message: '该卡号不存在' });
+      return err({ message: "该卡号不存在" });
     }
     return rsp({ data: { affectedRows: ret[0] } });
   } else {
-    console.log('我执行了嘛------------', card_number, address_id);
+    console.log("我执行了嘛------------", card_number, address_id);
     const ret = await MazeyAddress.update(
       {
         address_detail,
@@ -112,13 +112,13 @@ async function mUpdateAddress ({ card_number, address_id, address_detail, addres
         where: {
           address_id,
         },
-      }
+      },
     ).catch(console.error);
-    console.log('ret', ret);
+    console.log("ret", ret);
     if (Array.isArray(ret) && ret[0] > 0) {
       return rsp({ data: { affectedRows: ret[0] } });
     }
-    return err({ message: '该卡号不存在' });
+    return err({ message: "该卡号不存在" });
   }
 }
 

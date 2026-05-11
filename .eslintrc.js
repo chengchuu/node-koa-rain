@@ -1,58 +1,76 @@
 module.exports = {
-  root: true, // 指定跟路径
-  parserOptions: {
-    sourceType: 'module', // ECMAScript模块
-    ecmaVersion: 2018, // js版本
-    parser: 'babel-eslint', // 解析器
-  },
+  root: true,
   env: {
-    browser: false, // 浏览器启用
-    node: true, // node启用
-    es6: true, // es6启用
+    node: true,
+    es6: true,
   },
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: "script",
+  },
+  plugins: [ "node" ],
   extends: [
-    'standard', // js标准规则
-    // https://standardjs.com/rules-zhcn.html#javascript-standard-style
+    "eslint:recommended",
+    "plugin:node/recommended",
   ],
-  // add your custom rules here
   rules: {
-    indent: ['error', 2], // 缩进宽度2个空格
-    // https://eslint.org/docs/rules/comma-dangle#always-multiline
-    'comma-dangle': ['warn', 'always-multiline'], // 允许行末逗号
-    'no-constant-condition': 'off', // 允许常量作为表达式条件
-    'no-delete-var': 'off', // 允许使用delete
-    'no-extend-native': 'off', // 允许扩展原生对象
-    'no-floating-decimal': 'off', //  允许省去小数点前的0
-    'no-multi-str': 'off', // 允许多行字符串
-    camelcase: 'off',
-    // allow async-await
-    'generator-star-spacing': 'off', // 关闭
+    // Formatting consistency
+    "semi": [ "warn", "always" ],
+    "quotes": [ "warn", "double" ],
+    "indent": [ "warn", 2, { "SwitchCase": 1 } ],
+    "comma-dangle": [ "warn", "always-multiline" ],
+    "eol-last": [ "warn", "always" ],
+    "max-len": [
+      "warn",
+      {
+        "code": 200,
+        "ignoreComments": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreUrls": true,
+      },
+    ],
+    "spaced-comment": [ "warn", "always" ],
+    "object-curly-spacing": [ "warn", "always" ],
+    "array-bracket-spacing": [ "warn", "always" ],
+    "object-curly-newline": [ "warn", {
+      "ImportDeclaration": { "multiline": true, "minProperties": 4 },
+    } ],
 
-    semi: ['error', 'always'], // 使用分号
-    'no-unused-vars': ['warn', { vars: 'all', args: 'after-used', ignoreRestSiblings: false }],
-    // 最大长度 120
-    'max-len': [
-      'warn',
-      {
-        code: 200,
-        ignoreComments: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-        ignoreUrls: true,
-      },
-    ],
-    // 最大行数 500
-    'max-lines': [
-      'warn',
-      {
-        max: 500,
-        skipBlankLines: true,
-        skipComments: true,
-      },
-    ],
-    // 要求使用 let 或 const 而不是 var
-    'no-var': ['error'],
-    // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    // Maintainability / backend safety
+    "no-console": "off",
+    "no-debugger": "warn",
+    "no-unused-vars": [ "warn", {
+      "args": "none",
+      "ignoreRestSiblings": true,
+    } ],
+    "eqeqeq": [ "warn", "always", { "null": "ignore" } ],
+    "curly": [ "warn", "multi-line", "consistent" ],
+    "dot-notation": "warn",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-return-await": "warn",
+    "no-throw-literal": "warn",
+    "radix": "warn",
+
+    // Node plugin rules: keep useful ones, avoid noisy legacy friction
+    "node/no-deprecated-api": "warn",
+    "node/no-missing-require": "error",
+    "node/no-extraneous-require": "warn",
+    "node/process-exit-as-throw": "warn",
+
+    // Too noisy / legacy-unfriendly
+    "node/no-unsupported-features/es-syntax": "off",
+    "node/no-unpublished-require": "off",
+    "node/no-unpublished-import": "off",
+    "node/shebang": "off",
   },
+  overrides: [
+    {
+      files: [ "*.js" ],
+      rules: {
+        "strict": "off",
+      },
+    },
+  ],
 };

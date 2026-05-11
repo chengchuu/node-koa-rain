@@ -1,9 +1,9 @@
-const childProcess = require('child_process');
+const childProcess = require("child_process");
 
-const SayPlatformBase = require('./base.js');
+const SayPlatformBase = require("./base.js");
 
 const BASE_SPEED = 0; // Unsupported
-const COMMAND = 'powershell';
+const COMMAND = "powershell";
 
 class SayPlatformWin32 extends SayPlatformBase {
   constructor () {
@@ -13,10 +13,10 @@ class SayPlatformWin32 extends SayPlatformBase {
 
   buildSpeakCommand ({ text, voice, speed }) {
     let args = [];
-    let pipedData = '';
+    let pipedData = "";
     let options = {};
 
-    let psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;`;
+    let psCommand = "Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;";
 
     if (voice) {
       psCommand += `$speak.SelectVoice('${voice}');`;
@@ -27,7 +27,7 @@ class SayPlatformWin32 extends SayPlatformBase {
       psCommand += `$speak.Rate = ${adjustedSpeed};`;
     }
 
-    psCommand += `$speak.Speak([Console]::In.ReadToEnd())`;
+    psCommand += "$speak.Speak([Console]::In.ReadToEnd())";
 
     pipedData += text;
     args.push(psCommand);
@@ -38,10 +38,10 @@ class SayPlatformWin32 extends SayPlatformBase {
 
   buildExportCommand ({ text, voice, speed, filename }) {
     let args = [];
-    let pipedData = '';
+    let pipedData = "";
     let options = {};
 
-    let psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;`;
+    let psCommand = "Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;";
 
     if (voice) {
       psCommand += `$speak.SelectVoice('${voice}');`;
@@ -52,12 +52,12 @@ class SayPlatformWin32 extends SayPlatformBase {
       psCommand += `$speak.Rate = ${adjustedSpeed};`;
     }
 
-    if (!filename) throw new Error('Filename must be provided in export();');
+    if (!filename) {throw new Error("Filename must be provided in export();");}
     else {
       psCommand += `$speak.SetOutputToWaveFile('${filename}');`;
     }
 
-    psCommand += `$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()`;
+    psCommand += "$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()";
 
     pipedData += text;
     args.push(psCommand);
@@ -78,7 +78,7 @@ class SayPlatformWin32 extends SayPlatformBase {
 
   getVoices () {
     let args = [];
-    let psCommand = 'Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.GetInstalledVoices() | % {$_.VoiceInfo.Name}';
+    let psCommand = "Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.GetInstalledVoices() | % {$_.VoiceInfo.Name}";
     args.push(psCommand);
     return { command: COMMAND, args };
   }

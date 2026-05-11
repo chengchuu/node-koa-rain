@@ -1,8 +1,8 @@
 // 访客
-const axios = require('axios');
-const { clone } = require('lodash');
-const { rsp } = require('../entities/response');
-const { queryVisitors } = require('../model/visitor');
+const axios = require("axios");
+const { clone } = require("lodash");
+const { rsp } = require("../entities/response");
+const { queryVisitors } = require("../model/visitor");
 
 /**
  * @method getLatestVisitors
@@ -17,7 +17,7 @@ function getLatestVisitors () {
  * @desc 代理 GET 请求
  */
 async function sAgentGet (ctx) {
-  const { url, key = '' } = ctx.query;
+  const { url, key = "" } = ctx.query;
   if (key) {
     return require(`../model/metro/10/${key}.json`);
   }
@@ -27,7 +27,7 @@ async function sAgentGet (ctx) {
       return res.data;
     })
     .catch(err => {
-      console.error('err', err);
+      console.error("err", err);
     });
 }
 
@@ -36,7 +36,7 @@ async function sAgentGet (ctx) {
  * @desc 代理 PUT 请求
  */
 async function sAgentPut (ctx) {
-  const { url, body, key = '' } = ctx.request.body;
+  const { url, body, key = "" } = ctx.request.body;
   if (key) {
     return require(`../model/metro/10/${key}.json`);
   }
@@ -46,7 +46,7 @@ async function sAgentPut (ctx) {
       return res.data;
     })
     .catch(err => {
-      console.error('err', err);
+      console.error("err", err);
     });
 }
 
@@ -68,11 +68,11 @@ async function sAgentAny (ctx) {
     headers,
   })
     .then(res => {
-      console.log('res', res);
+      console.log("res", res);
       return res.data;
     })
     .catch(err => {
-      console.error('err', err);
+      console.error("err", err);
     });
 }
 

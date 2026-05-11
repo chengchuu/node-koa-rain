@@ -1,11 +1,11 @@
-const { sqlIns } = require('../entities/orm');
-const { DataTypes } = require('sequelize');
-const { rsp } = require('../entities/response');
-const { err } = require('../entities/error');
-const { isNumber } = require('mazey');
+const { sqlIns } = require("../entities/orm");
+const { DataTypes } = require("sequelize");
+const { rsp } = require("../entities/response");
+const { err } = require("../entities/error");
+const { isNumber } = require("mazey");
 
 const MazeyLog = sqlIns.define(
-  'MazeyLog',
+  "MazeyLog",
   {
     log_id: {
       // 自增 ID
@@ -35,10 +35,10 @@ const MazeyLog = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_log',
-    createdAt: 'create_at',
+    tableName: "mazey_log",
+    createdAt: "create_at",
     updatedAt: false,
-  }
+  },
 );
 
 MazeyLog.sync();
@@ -47,9 +47,9 @@ MazeyLog.sync();
 async function mAddLog ({ log_type, ip, content }) {
   const cRes = await MazeyLog.create({ log_type, ip, content }).catch(console.error);
   if (cRes && cRes.dataValues) {
-    return rsp({ message: '添加成功', data: cRes.dataValues });
+    return rsp({ message: "添加成功", data: cRes.dataValues });
   }
-  return err({ message: '添加失败' });
+  return err({ message: "添加失败" });
 }
 
 // 查看内容是否存在
@@ -63,9 +63,9 @@ async function mIsExistContent ({ content }) {
     return err();
   }
   if (cRes === 0) {
-    return rsp({ message: '不存在', data: { isExist: false } });
+    return rsp({ message: "不存在", data: { isExist: false } });
   }
-  return rsp({ message: '存在', data: { isExist: true } });
+  return rsp({ message: "存在", data: { isExist: true } });
 }
 
 module.exports = {

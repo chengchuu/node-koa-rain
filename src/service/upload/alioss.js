@@ -1,7 +1,7 @@
-const OSS = require('ali-oss');
+const OSS = require("ali-oss");
 
 // 上传文件 < 2M
-async function ossPut ({ region, accessKeyId, accessKeySecret, bucket, source, target = '', fileName } = {}) {
+async function ossPut ({ region, accessKeyId, accessKeySecret, bucket, source, target = "", fileName } = {}) {
   let client = new OSS({
     region,
     accessKeyId,
@@ -15,14 +15,14 @@ async function ossPut ({ region, accessKeyId, accessKeySecret, bucket, source, t
       return result.url;
     }
   } catch (e) {
-    console.error('oss error: ', e);
+    console.error("oss put:", e);
     return false;
   }
   return false;
 }
 
 // 分片上传 > 2M https://help.aliyun.com/document_detail/111268.html?spm=a2c4g.11186623.6.1098.14435d88D0koKc
-async function ossMultipartUpload ({ region, accessKeyId, accessKeySecret, bucket, source, target = '', fileName } = {}) {
+async function ossMultipartUpload ({ region, accessKeyId, accessKeySecret, bucket, source, target = "", fileName } = {}) {
   let client = new OSS({
     region,
     accessKeyId,
@@ -37,7 +37,8 @@ async function ossMultipartUpload ({ region, accessKeyId, accessKeySecret, bucke
     }
   } catch (e) {
     // 捕获超时异常。
-    if (e.code === 'ConnectionTimeoutError') {
+    if (e.code === "ConnectionTimeoutError") {
+      console.error("oss timeout:", e);
     }
     return false;
   }

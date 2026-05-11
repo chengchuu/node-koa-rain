@@ -1,14 +1,14 @@
-const jwt = require('jsonwebtoken');
-const { err } = require('../err');
-const { rsp } = require('../response');
+const jwt = require("jsonwebtoken");
+const { err } = require("../err");
+const { rsp } = require("../response");
 const config = {
-  secret: '20230319123456**',
+  secret: "20230319123456**",
   time: 60 * 60 * 24,
 };
 function jwtCreate (data, time) {
-  console.log('执行了嘛');
+  console.log("执行了嘛");
   let token = jwt.sign(data, config.secret, {
-    algorithm: 'HS256',
+    algorithm: "HS256",
     expiresIn: time || config.time,
   });
   return token;
@@ -17,33 +17,33 @@ async function authMiddleware (ctx, next) {
   // 暂时只加五个接口
   const token = ctx.headers.authorization;
   let authorList = [
-    '/server/upload/query',
-    '/server/game/add',
-    '/server/score/add',
-    '/server/upload',
-    '/server/tag/add',
-    '/server/card/batch-add',
-    '/server/card/batch-add-crab',
-    '/server/card/update-address',
-    '/server/card/get-logistics',
+    "/server/upload/query",
+    "/server/game/add",
+    "/server/score/add",
+    "/server/upload",
+    "/server/tag/add",
+    "/server/card/batch-add",
+    "/server/card/batch-add-crab",
+    "/server/card/update-address",
+    "/server/card/get-logistics",
   ];
-  let requestUrl = ctx.request.url ? ctx.request.url.split('?')[0] : '';
+  let requestUrl = ctx.request.url ? ctx.request.url.split("?")[0] : "";
   if (!authorList.includes(requestUrl)) {
     await next();
     return;
   }
   if (!token) {
     ctx.body = err({
-      message: '用户登陆过期,请重新登陆',
+      message: "用户登陆过期,请重新登陆",
     });
     return;
   }
   try {
     const decoded = jwtVerify(token);
-    console.log('decoded', decoded);
+    console.log("decoded", decoded);
     if (decoded.code !== 2) {
       ctx.body = err({
-        message: '用户登陆过期,请重新登陆',
+        message: "用户登陆过期,请重新登陆",
       });
       return;
     }
@@ -51,7 +51,7 @@ async function authMiddleware (ctx, next) {
     await next();
   } catch (error) {
     console.error(error);
-    ctx.throw(500, 'Internal server error');
+    ctx.throw(500, "Internal server error");
   }
 }
 function jwtVerify (token) {
@@ -59,13 +59,13 @@ function jwtVerify (token) {
     if (err) {
       return {
         code: 1,
-        message: 'invalid',
+        message: "invalid",
         data: null,
       };
     } else {
       return {
         code: 2,
-        message: 'valid',
+        message: "valid",
         data: jwtDecoded,
       };
     }

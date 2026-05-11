@@ -1,9 +1,9 @@
-const { sqlIns } = require('../../entities/orm');
-const { DataTypes, Op } = require('sequelize');
-const { rsp } = require('../../entities/response');
-const { err } = require('../../entities/error');
+const { sqlIns } = require("../../entities/orm");
+const { DataTypes, Op } = require("sequelize");
+const { rsp } = require("../../entities/response");
+const { err } = require("../../entities/error");
 const MazeyScore = sqlIns.define(
-  'MazeyScore',
+  "MazeyScore",
   {
     score_id: {
       // 自增 ID
@@ -42,10 +42,10 @@ const MazeyScore = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_score',
-    createdAt: 'create_at',
-    updatedAt: 'update_at',
-  }
+    tableName: "mazey_score",
+    createdAt: "create_at",
+    updatedAt: "update_at",
+  },
 );
 
 MazeyScore.sync();

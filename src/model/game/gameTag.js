@@ -1,7 +1,7 @@
-const { sqlIns } = require('../../entities/orm');
-const { DataTypes } = require('sequelize');
+const { sqlIns } = require("../../entities/orm");
+const { DataTypes } = require("sequelize");
 const MazeyGameTag = sqlIns.define(
-  'MazeyGameTag',
+  "MazeyGameTag",
   {
     game_id: {
       type: DataTypes.INTEGER,
@@ -11,8 +11,8 @@ const MazeyGameTag = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_game_tag',
-  }
+    tableName: "mazey_game_tag",
+  },
 );
 MazeyGameTag.sync();
 module.exports = {

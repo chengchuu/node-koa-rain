@@ -1,12 +1,12 @@
-const { sqlIns } = require('../../entities/orm');
-const { DataTypes } = require('sequelize');
-const { rsp, rspPage } = require('../../entities/response');
-const { err } = require('../../entities/error');
-const { MazeyTag } = require('./tag');
-const { MazeyGameTag } = require('./gameTag');
-const { MazeySisDic } = require('./sisDic');
+const { sqlIns } = require("../../entities/orm");
+const { DataTypes } = require("sequelize");
+const { rsp, rspPage } = require("../../entities/response");
+const { err } = require("../../entities/error");
+const { MazeyTag } = require("./tag");
+const { MazeyGameTag } = require("./gameTag");
+const { MazeySisDic } = require("./sisDic");
 const MazeyGame = sqlIns.define(
-  'MazeyGame',
+  "MazeyGame",
   {
     game_id: {
       // 自增 ID
@@ -57,13 +57,13 @@ const MazeyGame = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_game',
-    createdAt: 'create_at',
-    updatedAt: 'update_at',
-  }
+    tableName: "mazey_game",
+    createdAt: "create_at",
+    updatedAt: "update_at",
+  },
 );
 // 增加一个游戏
-async function addNewGame ({ game_picture, game_type, game_name, game_english_name, game_content, game_publisher = '', game_release_time = '', user_id, user_name }) {
+async function addNewGame ({ game_picture, game_type, game_name, game_english_name, game_content, game_publisher = "", game_release_time = "", user_id, user_name }) {
   const amount = await MazeyGame.count({
     where: {
       game_name,
@@ -98,17 +98,17 @@ async function queryUpdateGame ({ game_id }) {
     include: [
       {
         model: MazeyTag,
-        attributes: ['tag_id', 'tag_name'],
+        attributes: [ "tag_id", "tag_name" ],
       },
       {
         model: MazeySisDic,
-        attributes: ['dic_name'],
+        attributes: [ "dic_name" ],
       },
     ],
     through: { attributes: [] },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '该游戏不存在' });
+    return err({ message: "该游戏不存在" });
   }
   return rsp({ data: ret.dataValues });
 }
@@ -116,7 +116,7 @@ async function mUpdateGame ({ data }, score) {
   const scoreData = score.data;
   let game_score_personnel = data.game_score_personnel + 1;
   let game_score = (data.game_score * data.game_score_personnel + scoreData.score) / game_score_personnel;
-  console.log('game_score', game_score);
+  console.log("game_score", game_score);
   game_score = game_score.toFixed(2);
   let game_star = 5;
   let game_id = data.game_id;
@@ -130,10 +130,10 @@ async function mUpdateGame ({ data }, score) {
       where: {
         game_id,
       },
-    }
+    },
   ).catch(console.error);
   if (!ret) {
-    return err({ message: '该游戏不存在' });
+    return err({ message: "该游戏不存在" });
   }
   return rsp({ data: ret.dataValues });
 }
@@ -146,18 +146,18 @@ async function queryAllGame ({ currentPage, pageSize }) {
   const ret = await MazeyGame.findAll({
     limit: pageSize,
     offset: offset,
-    order: [['game_score', 'DESC']],
+    order: [ [ "game_score", "DESC" ] ],
     include: [
       {
         model: MazeyTag,
       },
       {
         model: MazeySisDic,
-        attributes: ['dic_name'],
+        attributes: [ "dic_name" ],
       },
     ],
   }).catch(console.error);
-  console.log('ret', ret);
+  console.log("ret", ret);
   return rspPage({ data: ret, currentPage, total });
 }
 // 给游戏增加标签
@@ -168,15 +168,15 @@ async function mAddNewGameTags ({ game_id, data }) {
     },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '该游戏不存在' });
+    return err({ message: "该游戏不存在" });
   }
   let tagIds = data.map(item => item[0].tag_id);
-  console.log('tagIds', tagIds);
+  console.log("tagIds", tagIds);
   ret.addMazeyTags(tagIds, { through: { unique: true } });
 }
-MazeyGame.belongsToMany(MazeyTag, { through: MazeyGameTag, foreignKey: 'game_id', otherKey: 'tag_id' });
-MazeyTag.belongsToMany(MazeyGame, { through: MazeyGameTag, foreignKey: 'tag_id', otherKey: 'game_id' });
-MazeyGame.belongsTo(MazeySisDic, { foreignKey: 'game_type' });
+MazeyGame.belongsToMany(MazeyTag, { through: MazeyGameTag, foreignKey: "game_id", otherKey: "tag_id" });
+MazeyTag.belongsToMany(MazeyGame, { through: MazeyGameTag, foreignKey: "tag_id", otherKey: "game_id" });
+MazeyGame.belongsTo(MazeySisDic, { foreignKey: "game_type" });
 MazeyGame.sync();
 module.exports = {
   addNewGame,

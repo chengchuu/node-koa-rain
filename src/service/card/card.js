@@ -1,27 +1,27 @@
 // const fs = require('fs');
 // const path = require('path');
-const { rsp } = require('../../entities/response');
-const { err } = require('../../entities/error');
-const ExcelJS = require('exceljs');
-const { mGetCardByNumber, mUpdateCard, mUpdateCardByAddress, mCheckCardByNumber, mBatchAddCard } = require('../../model/card/card');
-const { mAddAddressByNumber, mUpdateAddress, mGetAddressByNumber } = require('../../model/card/address');
-const { mBatchAddCrab } = require('../../model/card/crab');
-const { sRobotRemindCardAddress } = require('../robot/robot');
-const Joi = require('joi');
-const md5 = require('md5');
-const axios = require('axios');
-let querystring = require('querystring');
-const uuid = require('uuid');
-const { logistics } = require('../../config/env.development');
+const { rsp } = require("../../entities/response");
+const { err } = require("../../entities/error");
+const ExcelJS = require("exceljs");
+const { mGetCardByNumber, mUpdateCard, mUpdateCardByAddress, mCheckCardByNumber, mBatchAddCard } = require("../../model/card/card");
+const { mAddAddressByNumber, mUpdateAddress, mGetAddressByNumber } = require("../../model/card/address");
+const { mBatchAddCrab } = require("../../model/card/crab");
+const { sRobotRemindCardAddress } = require("../robot/robot");
+const Joi = require("joi");
+const md5 = require("md5");
+const axios = require("axios");
+let querystring = require("querystring");
+const uuid = require("uuid");
+const { logistics } = require("../../config/env.development");
 
 async function sCheckCardAccess ({ card_number, card_password }) {
   const schema = Joi.object({
     card_number: Joi.string()
       .required()
-      .error(new Error('请输入卡号')),
+      .error(new Error("请输入卡号")),
     card_password: Joi.string()
       .required()
-      .error(new Error('请输入密码')),
+      .error(new Error("请输入密码")),
   });
   const { error } = schema.validate({
     card_number,
@@ -59,7 +59,7 @@ async function sUploadCard (ctx) {
     // });
     // 将每一行的数据存储到数组中
   });
-  console.log('data', data);
+  console.log("data", data);
   // 批量导入数据
   const mBatchAddCardRes = await mBatchAddCard(data);
   return mBatchAddCardRes;
@@ -86,7 +86,7 @@ async function sBatchAddCrab (ctx) {
       });
     }
   });
-  console.log('data', data);
+  console.log("data", data);
   // 批量导入数据
   const mBatchAddCrabRes = await mBatchAddCrab(data);
   return mBatchAddCrabRes;
@@ -102,7 +102,7 @@ async function sGetCrabByNumber ({ card_number, card_password }) {
   const schema = Joi.object({
     card_number: Joi.string()
       .required()
-      .error(new Error('请输入卡号')),
+      .error(new Error("请输入卡号")),
   });
   const { error } = schema.validate({
     card_number,
@@ -114,26 +114,26 @@ async function sGetCrabByNumber ({ card_number, card_password }) {
   return mGetCrabByNumberRes;
 }
 async function sAddAddressByNumber ({ card_number, card_password, address_id, address_detail, address_user, address_mobile, address_date }) {
-  console.log('address_detail', card_number, address_detail, address_user, address_mobile, address_date);
+  console.log("address_detail", card_number, address_detail, address_user, address_mobile, address_date);
   const schema = Joi.object({
     card_number: Joi.string()
       .required()
-      .error(new Error('请输入卡号')),
+      .error(new Error("请输入卡号")),
     card_password: Joi.string()
       .required()
-      .error(new Error('请输入密码')),
+      .error(new Error("请输入密码")),
     address_detail: Joi.string()
       .required()
-      .error(new Error('请输入详细地址')),
+      .error(new Error("请输入详细地址")),
     address_user: Joi.string()
       .required()
-      .error(new Error('请输入收货人姓名')),
+      .error(new Error("请输入收货人姓名")),
     address_mobile: Joi.string()
       .required()
-      .error(new Error('请输入收货人手机号')),
+      .error(new Error("请输入收货人手机号")),
     address_date: Joi.string()
       .required()
-      .error(new Error('请选择发货日期')),
+      .error(new Error("请选择发货日期")),
   });
   const { error } = schema.validate({
     card_number,
@@ -159,7 +159,7 @@ async function sAddAddressByNumber ({ card_number, card_password, address_id, ad
     return mUpdateAddressRes;
   }
   const mGetCrabByNumberRes = await mGetCardByNumber({ card_number });
-  console.log('mGetCrabByNumberRes', mGetCrabByNumberRes);
+  console.log("mGetCrabByNumberRes", mGetCrabByNumberRes);
   if (mGetCrabByNumberRes && mGetCrabByNumberRes.data) {
     const { MazeyAddress } = mGetCrabByNumberRes.data;
     if (MazeyAddress && MazeyAddress.address_id) {
@@ -181,7 +181,7 @@ async function sAddAddressByNumber ({ card_number, card_password, address_id, ad
     }
     return mAddAddressByNumberRes;
   }
-  return err({ message: '失败' });
+  return err({ message: "失败" });
 }
 async function sUpdateCardByAddressNumber ({ address_id, address_category, address_number }) {
   // 填入单号的同时修改卡为已使用
@@ -205,17 +205,17 @@ async function sGetAddressByNumber ({ card_number, card_password }) {
 async function sGetAddressInfo ({ order_number }) {
   // 需要根据卡号查一下快递单号吗?
   if (!logistics || !logistics.partnerID || !logistics.sandboxCode) {
-    return err({ message: '缺少物流配置' });
+    return err({ message: "缺少物流配置" });
   }
   let tokenParams = {
     partnerID: logistics.partnerID,
     secret: logistics.sandboxCode,
-    grantType: 'password',
+    grantType: "password",
   };
   const encodeToken = querystring.stringify(tokenParams);
   let timestamp = Date.now();
   const generatedUuid = uuid.v4();
-  let msgData = { trackingType: '1', trackingNumber: [order_number], methodType: '1' };
+  let msgData = { trackingType: "1", trackingNumber: [ order_number ], methodType: "1" };
   msgData = JSON.stringify(msgData);
   // let codeString = msgData + timestamp + logistics.sandboxCode;
   // let encodedStr = encodeURIComponent(codeString);
@@ -223,35 +223,35 @@ async function sGetAddressInfo ({ order_number }) {
   let params = {
     partnerID: logistics.partnerID,
     requestID: generatedUuid,
-    serviceCode: 'EXP_RECE_SEARCH_ROUTES',
+    serviceCode: "EXP_RECE_SEARCH_ROUTES",
     timestamp: timestamp,
     msgData: msgData,
-    accessToken: '',
+    accessToken: "",
   };
   try {
     // 正式https://bspgw.sf-express.com/std/service
     // 沙箱https://sfapi-sbox.sf-express.com/std/service
-    let accessTokenRes = await axios.post('https://sfapi-sbox.sf-express.com/oauth2/accessToken', encodeToken, {
+    let accessTokenRes = await axios.post("https://sfapi-sbox.sf-express.com/oauth2/accessToken", encodeToken, {
       headers: {
-        'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        "Content-type": "application/x-www-form-urlencoded;charset=UTF-8",
       },
     });
-    console.log('accessTokenRes', accessTokenRes);
+    console.log("accessTokenRes", accessTokenRes);
     const { data } = accessTokenRes;
     params.accessToken = data.accessToken;
-    console.log('params', params);
+    console.log("params", params);
     const encodedData = querystring.stringify(params);
-    let addressResult = await axios.post('https://sfapi-sbox.sf-express.com/std/service', encodedData, {
+    let addressResult = await axios.post("https://sfapi-sbox.sf-express.com/std/service", encodedData, {
       headers: {
-        'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        "Content-type": "application/x-www-form-urlencoded;charset=UTF-8",
       },
     });
     let addressData = addressResult.data;
-    console.log('addressResult', addressResult);
+    console.log("addressResult", addressResult);
     return rsp({ data: addressData.apiResultData });
   } catch (error) {
-    console.error('sf error:', error);
-    return err({ message: '接口错误' });
+    console.error("sf error:", error);
+    return err({ message: "接口错误" });
   }
 }
 

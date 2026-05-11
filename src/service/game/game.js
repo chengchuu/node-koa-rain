@@ -1,17 +1,17 @@
-const { err } = require('../../entities/err');
-const { rsp } = require('../../entities/response');
-const { addNewGame, queryAllGame, queryUpdateGame } = require('../../model/game/game');
-const axios = require('axios');
-const Joi = require('joi');
+const { err } = require("../../entities/err");
+const { rsp } = require("../../entities/response");
+const { addNewGame, queryAllGame, queryUpdateGame } = require("../../model/game/game");
+const axios = require("axios");
+const Joi = require("joi");
 // 增加游戏
-async function sAddNewGame (ctx, { game_name, game_english_name, game_type, game_picture, game_content, game_publisher = '', game_release_time = '' }) {
+async function sAddNewGame (ctx, { game_name, game_english_name, game_type, game_picture, game_content, game_publisher = "", game_release_time = "" }) {
   const schema = Joi.object({
     game_name: Joi.string()
       .required()
-      .error(new Error('请输入游戏名称')),
+      .error(new Error("请输入游戏名称")),
     game_type: Joi.string()
       .required()
-      .error(new Error('请选择游戏类型')),
+      .error(new Error("请选择游戏类型")),
   });
   const { error } = schema.validate({
     game_name,
@@ -44,7 +44,7 @@ async function sQueryGame (ctx, { game_id }) {
   const schema = Joi.object({
     game_id: Joi.string()
       .required()
-      .error(new Error('请选择游戏')),
+      .error(new Error("请选择游戏")),
   });
   const { error } = schema.validate({
     game_id,
