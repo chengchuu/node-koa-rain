@@ -1,7 +1,7 @@
-const { sqlIns } = require('../../entities/orm');
-const { DataTypes } = require('sequelize');
+const { sqlIns } = require("../../entities/orm");
+const { DataTypes } = require("sequelize");
 const MazeySisDic = sqlIns.define(
-  'MazeySisDic',
+  "MazeySisDic",
   {
     dic_id: {
       type: DataTypes.INTEGER,
@@ -25,8 +25,8 @@ const MazeySisDic = sqlIns.define(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'mazey_sis_dic',
-        key: 'dic_id',
+        model: "mazey_sis_dic",
+        key: "dic_id",
       },
     },
     status: {
@@ -43,10 +43,10 @@ const MazeySisDic = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_sis_dic',
-    createdAt: 'create_at',
-    updatedAt: 'update_at',
-  }
+    tableName: "mazey_sis_dic",
+    createdAt: "create_at",
+    updatedAt: "update_at",
+  },
 );
 MazeySisDic.sync();
 module.exports = {

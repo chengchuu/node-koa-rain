@@ -1,11 +1,11 @@
-const { sqlIns } = require('../../entities/orm');
-const { DataTypes } = require('sequelize');
-const { rsp } = require('../../entities/response');
-const { err } = require('../../entities/error');
+const { sqlIns } = require("../../entities/orm");
+const { DataTypes } = require("sequelize");
+const { rsp } = require("../../entities/response");
+const { err } = require("../../entities/error");
 
 // 读书笔记
 const NutReadWiki = sqlIns.define(
-  'NutReadWiki',
+  "NutReadWiki",
   {
     read_wiki_id: {
       type: DataTypes.INTEGER,
@@ -40,10 +40,10 @@ const NutReadWiki = sqlIns.define(
     },
   },
   {
-    tableName: 'nut_read_wiki',
-    createdAt: 'create_at',
+    tableName: "nut_read_wiki",
+    createdAt: "create_at",
     updatedAt: false,
-  }
+  },
 );
 
 NutReadWiki.sync();
@@ -57,28 +57,28 @@ async function mAddWiki ({ nick_name, book_name, content }) {
     integral: 30,
   }).catch(console.error);
   if (ret && ret.dataValues) {
-    return rsp({ message: '添加成功', data: ret.dataValues });
+    return rsp({ message: "添加成功", data: ret.dataValues });
   }
-  return err({ message: '添加失败' });
+  return err({ message: "添加失败" });
 }
 
 // 查询
 async function mGetWikis ({ nick_name } = {}) {
   if (!nick_name) {
-    return err({ message: '缺少花名' });
+    return err({ message: "缺少花名" });
   }
   const query = {
     where: {
       nick_name,
       read_wiki_status: 1,
     },
-    order: [['create_at', 'DESC']],
+    order: [ [ "create_at", "DESC" ] ],
   };
   const ret = await NutReadWiki.findAll(query).catch(console.error);
   if (ret && Array.isArray(ret)) {
-    return rsp({ message: '成功', data: ret });
+    return rsp({ message: "成功", data: ret });
   }
-  return err({ message: '失败' });
+  return err({ message: "失败" });
 }
 
 // 查询所有记录
@@ -87,13 +87,13 @@ async function mGetAllWikis () {
     where: {
       read_wiki_status: 1,
     },
-    order: [['create_at', 'DESC']],
+    order: [ [ "create_at", "DESC" ] ],
   };
   const ret = await NutReadWiki.findAll(query).catch(console.error);
   if (ret && Array.isArray(ret)) {
-    return rsp({ message: '成功', data: ret });
+    return rsp({ message: "成功", data: ret });
   }
-  return err({ message: '失败' });
+  return err({ message: "失败" });
 }
 
 // // 删除记录
@@ -126,12 +126,12 @@ async function mGetWikiIntegral ({ nick_name }) {
           book_name
       ) AS A;
   `);
-  console.log('integralRow', integralRow);
-  const [results] = integralRow;
+  console.log("integralRow", integralRow);
+  const [ results ] = integralRow;
   if (results.length && results[0].sumIntegral) {
-    return rsp({ message: '查询成功', data: { integral: results[0] } });
+    return rsp({ message: "查询成功", data: { integral: results[0] } });
   }
-  return err({ message: '查询失败' });
+  return err({ message: "查询失败" });
 }
 
 module.exports = {

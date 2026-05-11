@@ -1,12 +1,12 @@
-const { sqlIns } = require('../entities/orm');
-const { DataTypes, Op } = require('sequelize');
-const { err } = require('../entities/error');
-const { rsp } = require('../entities/response');
-const md5 = require('md5');
-const { jwtCreate } = require('../entities/jwt');
-const { pswSecret } = require('../config/index');
+const { sqlIns } = require("../entities/orm");
+const { DataTypes, Op } = require("sequelize");
+const { err } = require("../entities/error");
+const { rsp } = require("../entities/response");
+const md5 = require("md5");
+const { jwtCreate } = require("../entities/jwt");
+const { pswSecret } = require("../config/index");
 const MazeyUser = sqlIns.define(
-  'MazeyUser',
+  "MazeyUser",
   {
     user_id: {
       type: DataTypes.INTEGER,
@@ -49,18 +49,18 @@ const MazeyUser = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_user',
-    createdAt: 'user_signup_time',
+    tableName: "mazey_user",
+    createdAt: "user_signup_time",
     updatedAt: false,
-  }
+  },
 );
 
 MazeyUser.sync();
 // 新增用户
-async function acquireNewUser ({ user_signup_ip, user_signup_city, user_fingerprint, user_name, real_name, user_password = '', user_email = '' }) {
+async function acquireNewUser ({ user_signup_ip, user_signup_city, user_fingerprint, user_name, real_name, user_password = "", user_email = "" }) {
   const amount = await MazeyUser.count({
     where: {
-      [Op.or]: [{ user_fingerprint: user_fingerprint }, { user_email: user_email }],
+      [Op.or]: [ { user_fingerprint: user_fingerprint }, { user_email: user_email } ],
     },
   });
   if (amount === 0) {
@@ -78,7 +78,7 @@ async function acquireNewUser ({ user_signup_ip, user_signup_city, user_fingerpr
     }
     return err();
   }
-  return rsp({ message: '用户已存在或邮箱已注册' });
+  return rsp({ message: "用户已存在或邮箱已注册" });
 }
 
 // 查询用户 uid
@@ -104,16 +104,16 @@ async function mLogin ({ user_name, user_password }) {
       user_name,
       user_password: {
         [Op.and]: {
-          [Op.ne]: '',
+          [Op.ne]: "",
           [Op.not]: null,
         },
       },
     },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '用户不存在' });
+    return err({ message: "用户不存在" });
   }
-  console.log('ret', ret);
+  console.log("ret", ret);
   const { user_password: realPassword } = ret;
   const {
     data: { token: requestPassword },
@@ -122,7 +122,7 @@ async function mLogin ({ user_name, user_password }) {
     let jwtToken = jwtCreate(ret.dataValues);
     return rsp({ data: { token: realPassword, jwtToken: jwtToken } });
   }
-  return err({ message: '密码错误' });
+  return err({ message: "密码错误" });
 }
 
 // 生成 Token
@@ -136,14 +136,14 @@ async function mGetUserIdByPassword ({ user_password }) {
       user_password,
       user_id: {
         [Op.and]: {
-          [Op.ne]: '',
+          [Op.ne]: "",
           [Op.not]: null,
         },
       },
     },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '用户不存在' });
+    return err({ message: "用户不存在" });
   }
   const { user_id: userId } = ret;
   return rsp({ data: { userId } });
@@ -156,20 +156,20 @@ async function mGetUserNameByPassword ({ user_password }) {
       user_password,
       user_name: {
         [Op.and]: {
-          [Op.ne]: '',
+          [Op.ne]: "",
           [Op.not]: null,
         },
       },
       user_id: {
         [Op.and]: {
-          [Op.ne]: '',
+          [Op.ne]: "",
           [Op.not]: null,
         },
       },
     },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '用户不存在' });
+    return err({ message: "用户不存在" });
   }
   const { user_name: userName, user_id: userId } = ret;
   return rsp({ data: { userName, userId } });

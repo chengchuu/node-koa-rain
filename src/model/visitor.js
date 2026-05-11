@@ -1,15 +1,15 @@
-const { sqlIns } = require('../entities/orm');
-const { DataTypes } = require('sequelize');
-const { acquireNewUser } = require('./user');
+const { sqlIns } = require("../entities/orm");
+const { DataTypes } = require("sequelize");
+const { acquireNewUser } = require("./user");
 
 // 访客表
 const ddTableInfo = {
-  tableName: 'mazey_visitor',
-  createdAt: 'visitor_time',
+  tableName: "mazey_visitor",
+  createdAt: "visitor_time",
   updatedAt: false,
 };
 const MazeyVisitor = sqlIns.define(
-  'MazeyVisitor',
+  "MazeyVisitor",
   {
     visitor_id: {
       type: DataTypes.INTEGER,
@@ -71,7 +71,7 @@ const MazeyVisitor = sqlIns.define(
       type: DataTypes.STRING(50),
     },
   },
-  ddTableInfo
+  ddTableInfo,
 );
 
 MazeyVisitor.sync();
@@ -124,10 +124,10 @@ async function saveIPInfo ({
   return MazeyVisitor.create(createData)
     .then(r => {
       // pass
-      console.log('_ r:', r);
+      console.log("_ r:", r);
     })
     .catch(e => {
-      if (e.message.includes(`doesn't exist`)) {
+      if (e.message.includes("doesn't exist")) {
         MazeyVisitor.sync()
           .then(() => MazeyVisitor.create(createData))
           .catch(console.error);
@@ -138,7 +138,7 @@ async function saveIPInfo ({
 // 最近访客
 async function queryVisitors () {
   return MazeyVisitor.findAll({
-    order: [['visitor_id', 'DESC']],
+    order: [ [ "visitor_id", "DESC" ] ],
     limit: 10,
   });
 }

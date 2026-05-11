@@ -1,8 +1,8 @@
-const { sqlIns } = require('../entities/orm');
-const { DataTypes } = require('sequelize');
+const { sqlIns } = require("../entities/orm");
+const { DataTypes } = require("sequelize");
 
 const MazeyTiny = sqlIns.define(
-  'MazeyTiny',
+  "MazeyTiny",
   {
     tiny_id: {
       // 自增 ID
@@ -31,10 +31,10 @@ const MazeyTiny = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_tiny',
-    createdAt: 'create_at',
+    tableName: "mazey_tiny",
+    createdAt: "create_at",
     updatedAt: false,
-  }
+  },
 );
 
 MazeyTiny.sync();
@@ -65,14 +65,14 @@ async function saveTinyLink ({ tiny_id, tiny_link, tiny_key }) {
       where: {
         tiny_id,
       },
-    }
+    },
   ).catch(console.error);
 }
 
 // 查询短链接映射的长链接
 async function queryTinyLink ({ tiny_key }) {
   return MazeyTiny.findOne({
-    attributes: ['ori_link'],
+    attributes: [ "ori_link" ],
     where: {
       tiny_key,
     },
@@ -80,8 +80,8 @@ async function queryTinyLink ({ tiny_key }) {
 }
 // 更新短链接访问次数
 async function mUpdateTinyLink ({ tiny_key }) {
-  console.log('wozhixinglewa', tiny_key);
-  return MazeyTiny.increment('tiny_count', {
+  console.log("wozhixinglewa", tiny_key);
+  return MazeyTiny.increment("tiny_count", {
     where: {
       tiny_key,
     },

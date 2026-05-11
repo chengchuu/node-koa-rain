@@ -1,11 +1,11 @@
-const { sqlIns } = require('../entities/orm');
-const { DataTypes, Op } = require('sequelize');
-const { mGetUserNameByPassword } = require('./user');
-const { err } = require('../entities/error');
-const { rsp } = require('../entities/response');
+const { sqlIns } = require("../entities/orm");
+const { DataTypes, Op } = require("sequelize");
+const { mGetUserNameByPassword } = require("./user");
+const { err } = require("../entities/error");
+const { rsp } = require("../entities/response");
 
 const MazeyOSS = sqlIns.define(
-  'MazeyOSS',
+  "MazeyOSS",
   {
     oss_id: {
       type: DataTypes.INTEGER,
@@ -45,17 +45,17 @@ const MazeyOSS = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_oss',
-    createdAt: 'oss_create_time',
+    tableName: "mazey_oss",
+    createdAt: "oss_create_time",
     updatedAt: false,
-  }
+  },
 );
 
 MazeyOSS.sync();
 
 // 获取 OSS 配置
 async function getOSS ({ oss_user_id, oss_id }) {
-  console.log('_ oss_user_id:', oss_user_id);
+  console.log("_ oss_user_id:", oss_user_id);
   return MazeyOSS.findOne({
     where: {
       oss_id,
@@ -68,7 +68,7 @@ async function mGetOSSConfs ({ oss_user_id, access_token }) {
   let where;
   if (!access_token) {
     where = {
-      [Op.or]: [{ oss_user_id }, { oss_is_public: 1 }],
+      [Op.or]: [ { oss_user_id }, { oss_is_public: 1 } ],
     };
   } else {
     where = {
@@ -78,7 +78,7 @@ async function mGetOSSConfs ({ oss_user_id, access_token }) {
   }
   return MazeyOSS.findAll({
     where,
-    order: [['oss_id', 'DESC']],
+    order: [ [ "oss_id", "DESC" ] ],
   }).catch(console.error);
 }
 
@@ -95,10 +95,10 @@ async function mNewGetOSSConfs ({ token }) {
     where: {
       user_name: userName,
     },
-    order: [['oss_id', 'DESC']],
+    order: [ [ "oss_id", "DESC" ] ],
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '无 OSS 配置' });
+    return err({ message: "无 OSS 配置" });
   }
   return rsp({ data: { OSSConfs: ret } });
 }
@@ -109,7 +109,7 @@ async function mNewOSSConf ({ oss_name, region, access_key_id, access_key_secret
 }
 
 // 创建新的 OSS 配置
-async function mAddOSSConf ({ ossName, region, accessKeyId, accessKeySecret, bucket, cdnDomain = 'https://example.com/', userName }) {
+async function mAddOSSConf ({ ossName, region, accessKeyId, accessKeySecret, bucket, cdnDomain = "https://example.com/", userName }) {
   const cRes = await MazeyOSS.create({ oss_name: ossName, region, access_key_id: accessKeyId, access_key_secret: accessKeySecret, bucket, cdn_domain: cdnDomain, user_name: userName });
   if (cRes) {
     return rsp();

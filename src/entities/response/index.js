@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
 // 格式化返回字段
-function rsp ({ ctx, ret = 0, info = 'ok', message = '成功', data = {} } = {}) {
+function rsp ({ ctx, ret = 0, info = "ok", message = "成功", data = {} } = {}) {
   const rspBody = {
     ret,
     info,
@@ -13,7 +13,7 @@ function rsp ({ ctx, ret = 0, info = 'ok', message = '成功', data = {} } = {})
 }
 
 // 格式化返回字段分页
-function rspPage ({ ctx, ret = 0, info = 'ok', message = '成功', data = {}, currentPage = 1, total = 0, pageSize = 10 } = {}) {
+function rspPage ({ ctx, ret = 0, info = "ok", message = "成功", data = {}, currentPage = 1, total = 0, pageSize = 10 } = {}) {
   const rspBody = {
     ret,
     info,

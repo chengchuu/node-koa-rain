@@ -1,12 +1,12 @@
 // 卡号 密码 状态(0, 1)
-const { sqlIns } = require('../../entities/orm');
-const { DataTypes } = require('sequelize');
-const { rsp } = require('../../entities/response');
-const { err } = require('../../entities/error');
-const { MazeyCrab } = require('./crab');
-const { MazeyAddress } = require('./address');
+const { sqlIns } = require("../../entities/orm");
+const { DataTypes } = require("sequelize");
+const { rsp } = require("../../entities/response");
+const { err } = require("../../entities/error");
+const { MazeyCrab } = require("./crab");
+const { MazeyAddress } = require("./address");
 const MazeyCard = sqlIns.define(
-  'MazeyCard',
+  "MazeyCard",
   {
     card_id: {
       // 自增 ID
@@ -39,11 +39,11 @@ const MazeyCard = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_card',
-    createdAt: 'create_at',
-    updatedAt: 'update_at',
-    indexes: [{ fields: ['card_number'] }],
-  }
+    tableName: "mazey_card",
+    createdAt: "create_at",
+    updatedAt: "update_at",
+    indexes: [ { fields: [ "card_number" ] } ],
+  },
 );
 async function mCheckCardByNumber ({ card_number, card_password }) {
   const ret = await MazeyCard.findOne({
@@ -54,7 +54,7 @@ async function mCheckCardByNumber ({ card_number, card_password }) {
     through: { attributes: [] },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '该卡号不存在或者密码错误' });
+    return err({ message: "该卡号不存在或者密码错误" });
   }
   return rsp({ data: ret.dataValues });
 }
@@ -74,7 +74,7 @@ async function mGetCardByNumber ({ card_number }) {
     through: { attributes: [] },
   }).catch(console.error);
   if (!ret) {
-    return err({ message: '该卡号不存在或者密码错误' });
+    return err({ message: "该卡号不存在或者密码错误" });
   }
   return rsp({ data: ret.dataValues });
 }
@@ -87,10 +87,10 @@ async function mUpdateCard ({ address_id, card_number }) {
       where: {
         card_number,
       },
-    }
+    },
   ).catch(console.error);
   if (!Array.isArray(ret) || ret[0] === 0) {
-    return err({ message: '该卡号不存在' });
+    return err({ message: "该卡号不存在" });
   }
   return rsp({ data: { affectedRows: ret[0] } });
 }
@@ -103,23 +103,23 @@ async function mUpdateCardByAddress ({ address_id }) {
       where: {
         address_id,
       },
-    }
+    },
   ).catch(console.error);
   if (!Array.isArray(ret) || ret[0] === 0) {
-    return err({ message: '该卡号不存在' });
+    return err({ message: "该卡号不存在" });
   }
   return rsp({ data: { affectedRows: ret[0] } });
 }
 async function mBatchAddCard (data) {
   const ret = await MazeyCard.bulkCreate(data);
   if (!ret) {
-    return err({ message: '失败' });
+    return err({ message: "失败" });
   }
   return rsp({ data: ret });
 }
 // 两个外键
-MazeyCard.belongsTo(MazeyCrab, { foreignKey: 'crab_id' });
-MazeyCard.belongsTo(MazeyAddress, { foreignKey: 'address_id' });
+MazeyCard.belongsTo(MazeyCrab, { foreignKey: "crab_id" });
+MazeyCard.belongsTo(MazeyAddress, { foreignKey: "address_id" });
 MazeyCard.sync();
 module.exports = {
   mCheckCardByNumber,

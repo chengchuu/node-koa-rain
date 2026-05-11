@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // 检查手机格式
 function checkPhone (phone) {
@@ -11,7 +11,7 @@ function convert26 (num) {
 
 // 书名
 function genBookName (bookName) {
-  if (bookName.includes('《')) {
+  if (bookName.includes("《")) {
     return bookName;
   }
   return `《${bookName}》`;
@@ -19,7 +19,7 @@ function genBookName (bookName) {
 
 // 空内容
 function isEmptyContent (content) {
-  if (['', null, 'null', 'NULL', 'Null'].includes(content)) {
+  if ([ "", null, "null", "NULL", "Null" ].includes(content)) {
     return true;
   }
   return false;

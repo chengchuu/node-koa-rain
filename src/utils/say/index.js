@@ -1,10 +1,10 @@
-const SayLinux = require('./platform/linux.js');
-const SayMacos = require('./platform/darwin.js');
-const SayWin32 = require('./platform/win32.js');
+const SayLinux = require("./platform/linux.js");
+const SayMacos = require("./platform/darwin.js");
+const SayWin32 = require("./platform/win32.js");
 
-const MACOS = 'darwin';
-const LINUX = 'linux';
-const WIN32 = 'win32';
+const MACOS = "darwin";
+const LINUX = "linux";
+const WIN32 = "win32";
 
 class Say {
   constructor (platform) {

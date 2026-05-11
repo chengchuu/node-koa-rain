@@ -1,8 +1,8 @@
-const { sqlIns } = require('../entities/orm');
-const { DataTypes } = require('sequelize');
-const { mGetUserNameByPassword } = require('./user');
+const { sqlIns } = require("../entities/orm");
+const { DataTypes } = require("sequelize");
+const { mGetUserNameByPassword } = require("./user");
 const MazeyAsset = sqlIns.define(
-  'MazeyAsset',
+  "MazeyAsset",
   {
     asset_id: {
       type: DataTypes.INTEGER,
@@ -46,10 +46,10 @@ const MazeyAsset = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_asset',
-    createdAt: 'asset_create_time',
+    tableName: "mazey_asset",
+    createdAt: "asset_create_time",
     updatedAt: false,
-  }
+  },
 );
 
 MazeyAsset.sync();
@@ -57,19 +57,19 @@ MazeyAsset.sync();
 // 新增上传资源
 async function newAsset ({ asset_link, asset_oss_id, asset_file_name, asset_show_link, asset_oss_link, asset_target, asset_type, asset_size, asset_operator_id, user_id }) {
   return MazeyAsset.create({ asset_link, asset_oss_id: user_id || asset_oss_id, asset_file_name, asset_show_link, asset_oss_link, asset_target, asset_type, asset_size, asset_operator_id }).catch(
-    console.error
+    console.error,
   );
 }
 
 // 查询静态资源
 async function getAsset ({ asset_operator_id, user_id, limit }) {
-  console.log('_ asset_operator_id:', asset_operator_id, user_id);
+  console.log("_ asset_operator_id:", asset_operator_id, user_id);
   const query = {
     where: {
       asset_oss_id: user_id,
       asset_status: 1,
     },
-    order: [['asset_create_time', 'DESC']],
+    order: [ [ "asset_create_time", "DESC" ] ],
   };
   if (limit) {
     Object.assign(query, { limit });
@@ -85,7 +85,7 @@ async function removeAsset ({ asset_id }) {
       where: {
         asset_id,
       },
-    }
+    },
   );
 }
 

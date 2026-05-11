@@ -1,6 +1,6 @@
-const childProcess = require('child_process');
-const once = require('one-time');
-const iconv = require('iconv-lite');
+const childProcess = require("child_process");
+const once = require("one-time");
+const iconv = require("iconv-lite");
 
 class SayPlatformBase {
   constructor () {
@@ -17,7 +17,7 @@ class SayPlatformBase {
    * @param {Function|null} callback A callback of type function(err) to return.
    */
   speak (text, voice, speed, callback) {
-    if (typeof callback !== 'function') {
+    if (typeof callback !== "function") {
       callback = () => {};
     }
 
@@ -25,7 +25,7 @@ class SayPlatformBase {
 
     if (!text) {
       return setImmediate(() => {
-        callback(new TypeError('say.speak(): must provide text parameter'));
+        callback(new TypeError("say.speak(): must provide text parameter"));
       });
     }
 
@@ -33,19 +33,19 @@ class SayPlatformBase {
 
     this.child = childProcess.spawn(command, args, options);
 
-    this.child.stdin.setEncoding('utf8');
-    this.child.stderr.setEncoding('utf8');
+    this.child.stdin.setEncoding("utf8");
+    this.child.stderr.setEncoding("utf8");
 
     if (pipedData) {
-      this.child.stdin.end(iconv.encode(pipedData, 'gbk'));
+      this.child.stdin.end(iconv.encode(pipedData, "gbk"));
     }
 
-    this.child.stderr.once('data', data => {
+    this.child.stderr.once("data", data => {
       // we can't stop execution from this function
       callback(new Error(data));
     });
 
-    this.child.addListener('exit', (code, signal) => {
+    this.child.addListener("exit", (code, signal) => {
       if (code === null || signal !== null) {
         return callback(new Error(`say.speak(): could not talk, had an error [code: ${code}] [signal: ${signal}]`));
       }
@@ -66,7 +66,7 @@ class SayPlatformBase {
    * @param {Function|null} callback A callback of type function(err) to return.
    */
   export (text, voice, speed, filename, callback) {
-    if (typeof callback !== 'function') {
+    if (typeof callback !== "function") {
       callback = () => {};
     }
 
@@ -74,13 +74,13 @@ class SayPlatformBase {
 
     if (!text) {
       return setImmediate(() => {
-        callback(new TypeError('say.export(): must provide text parameter'));
+        callback(new TypeError("say.export(): must provide text parameter"));
       });
     }
 
     if (!filename) {
       return setImmediate(() => {
-        callback(new TypeError('say.export(): must provide filename parameter'));
+        callback(new TypeError("say.export(): must provide filename parameter"));
       });
     }
     try {
@@ -94,19 +94,19 @@ class SayPlatformBase {
 
     this.child = childProcess.spawn(command, args, options);
 
-    this.child.stdin.setEncoding('utf8');
-    this.child.stderr.setEncoding('utf8');
+    this.child.stdin.setEncoding("utf8");
+    this.child.stderr.setEncoding("utf8");
 
     if (pipedData) {
-      this.child.stdin.end(iconv.encode(pipedData, 'gbk'));
+      this.child.stdin.end(iconv.encode(pipedData, "gbk"));
     }
 
-    this.child.stderr.once('data', data => {
+    this.child.stderr.once("data", data => {
       // we can't stop execution from this function
       callback(new Error(data));
     });
 
-    this.child.addListener('exit', (code, signal) => {
+    this.child.addListener("exit", (code, signal) => {
       if (code === null || signal !== null) {
         return callback(new Error(`say.export(): could not talk, had an error [code: ${code}] [signal: ${signal}]`));
       }
@@ -125,7 +125,7 @@ class SayPlatformBase {
    * @param {Function|null} callback A callback of type function(err) to return.
    */
   stop (callback) {
-    if (typeof callback !== 'function') {
+    if (typeof callback !== "function") {
       callback = () => {};
     }
 
@@ -133,7 +133,7 @@ class SayPlatformBase {
 
     if (!this.child) {
       return setImmediate(() => {
-        callback(new Error('say.stop(): no speech to kill'));
+        callback(new Error("say.stop(): no speech to kill"));
       });
     }
 
@@ -153,7 +153,7 @@ class SayPlatformBase {
    * @param {Function} callback A callback of type function(err,voices) to return.
    */
   getInstalledVoices (callback) {
-    if (typeof callback !== 'function') {
+    if (typeof callback !== "function") {
       callback = () => {};
     }
     callback = once(callback);
@@ -162,24 +162,24 @@ class SayPlatformBase {
     let voices = [];
     this.child = childProcess.spawn(command, args);
 
-    this.child.stdin.setEncoding('utf8');
-    this.child.stderr.setEncoding('utf8');
+    this.child.stdin.setEncoding("utf8");
+    this.child.stderr.setEncoding("utf8");
 
-    this.child.stderr.once('data', data => {
+    this.child.stderr.once("data", data => {
       // we can't stop execution from this function
       callback(new Error(data));
     });
-    this.child.stdout.on('data', function (data) {
+    this.child.stdout.on("data", function (data) {
       voices += data;
     });
 
-    this.child.addListener('exit', (code, signal) => {
+    this.child.addListener("exit", (code, signal) => {
       if (code === null || signal !== null) {
         return callback(new Error(`say.getInstalledVoices(): could not get installed voices, had an error [code: ${code}] [signal: ${signal}]`));
       }
       if (voices.length > 0) {
-        voices = voices.split('\r\n');
-        voices = voices[voices.length - 1] === '' ? voices.slice(0, voices.length - 1) : voices;
+        voices = voices.split("\r\n");
+        voices = voices[voices.length - 1] === "" ? voices.slice(0, voices.length - 1) : voices;
       }
       this.child = null;
 

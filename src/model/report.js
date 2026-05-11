@@ -1,8 +1,8 @@
-const { sqlIns } = require('../entities/orm');
-const { DataTypes } = require('sequelize');
+const { sqlIns } = require("../entities/orm");
+const { DataTypes } = require("sequelize");
 
 const MazeyReport = sqlIns.define(
-  'MazeyReport',
+  "MazeyReport",
   {
     report_id: {
       type: DataTypes.INTEGER,
@@ -74,10 +74,10 @@ const MazeyReport = sqlIns.define(
     },
   },
   {
-    tableName: 'mazey_report',
-    createdAt: 'report_create_time',
+    tableName: "mazey_report",
+    createdAt: "report_create_time",
     updatedAt: false,
-  }
+  },
 );
 
 MazeyReport.sync();
@@ -129,7 +129,7 @@ async function report ({
     decoded_body_size,
     encoded_body_size,
   })
-    .then(() => 'success')
+    .then(() => "success")
     .catch(console.error);
 }
 

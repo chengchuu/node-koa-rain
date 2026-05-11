@@ -1,7 +1,7 @@
-const SayPlatformBase = require('./base.js');
+const SayPlatformBase = require("./base.js");
 
 const BASE_SPEED = 100;
-const COMMAND = 'festival';
+const COMMAND = "festival";
 
 class SayPlatformLinux extends SayPlatformBase {
   constructor () {
@@ -11,10 +11,10 @@ class SayPlatformLinux extends SayPlatformBase {
 
   buildSpeakCommand ({ text, voice, speed }) {
     let args = [];
-    let pipedData = '';
+    let pipedData = "";
     let options = {};
 
-    args.push('--pipe');
+    args.push("--pipe");
 
     if (speed) {
       pipedData += `(Parameter.set 'Audio_Command "aplay -q -c 1 -t raw -f s16 -r $(($SR*${this.convertSpeed(speed)}/100)) $FILE") `;

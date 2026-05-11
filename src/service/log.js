@@ -1,35 +1,35 @@
-const { err } = require('../entities/error');
-const { rsp } = require('../entities/response');
-const { mAddLog, mIsExistContent } = require('../model/log');
-const { sRobotSendColorText, sGetRobotKeyByAlias } = require('./robot/index.js');
-const { sGetIP } = require('./user');
+const { err } = require("../entities/error");
+const { rsp } = require("../entities/response");
+const { mAddLog, mIsExistContent } = require("../model/log");
+const { sRobotSendColorText, sGetRobotKeyByAlias } = require("./robot/index.js");
+const { sGetIP } = require("./user");
 
 // 新增日志 - 使用驼峰，遗弃下划线 log_type
 async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
   const tempType = logType || log_type;
-  if (typeof content === 'object') {
+  if (typeof content === "object") {
     content = JSON.stringify(content);
   }
   if (isEncode) {
     // 对base64的数据进行解码
-    let buff = Buffer.from(content, 'base64');
-    content = buff.toString('utf-8');
+    let buff = Buffer.from(content, "base64");
+    content = buff.toString("utf-8");
     // content = buff.toString('base64');
   }
   if (content && content.length >= 500) {
-    return err({ message: '内容长度不能超过 500' });
+    return err({ message: "内容长度不能超过 500" });
   }
-  let ip = '';
+  let ip = "";
   if (ctx) {
     ({
       data: { ip },
     } = await sGetIP(ctx));
   }
-  console.log('sAddLog, 新增日志:', { tempType, content, ip, isEncode });
+  console.log("sAddLog, 新增日志:", { tempType, content, ip, isEncode });
   const AddLogRes = await mAddLog({ log_type: tempType, ip, content });
   if (AddLogRes.ret === 0) {
     if (isEncode) {
-      return rsp({ message: 'success', data: { content } });
+      return rsp({ message: "success", data: { content } });
     }
     return AddLogRes;
   }
@@ -42,7 +42,7 @@ async function sIsExistContent ({ ctx, content }) {
   let { logContent = [] } = ctx;
   let index = logContent.findIndex(item => item === content);
   if (index > -1) {
-    return rsp({ message: '存在', data: { isExist: true } });
+    return rsp({ message: "存在", data: { isExist: true } });
   } else {
     let len = logContent.length;
     if (len >= 10) {
@@ -66,14 +66,14 @@ async function sIsExistContent ({ ctx, content }) {
  * @param {String} alias KEY别名 orangeKey 小橘子
  * @return {Object} 是否正确上报
  * */
-async function sReportErrorInfo ({ ctx, logType = 'unknown_error', err = {}, pageTitle = '', url = '', alias = 'orangeKey' } = {}) {
-  let requestUrl = '';
+async function sReportErrorInfo ({ ctx, logType = "unknown_error", err = {}, pageTitle = "", url = "", alias = "orangeKey" } = {}) {
+  let requestUrl = "";
   if (ctx.request && ctx.request.url && ctx.request.header) {
     url = `${ctx.request.header.host}${ctx.request.url}`;
   }
   url = url || requestUrl;
   // 要旨 摘要 栈
-  let { message = '', stack = '' } = err;
+  let { message = "", stack = "" } = err;
   let errContent = `\`#错误日志\` \`#${logType}\``;
   if (pageTitle) {
     errContent += `\n标题：${pageTitle}`;

@@ -1,7 +1,7 @@
-const SayPlatformBase = require('./base.js');
+const SayPlatformBase = require("./base.js");
 
 const BASE_SPEED = 175;
-const COMMAND = 'say';
+const COMMAND = "say";
 
 class SayPlatformDarwin extends SayPlatformBase {
   constructor () {
@@ -11,17 +11,17 @@ class SayPlatformDarwin extends SayPlatformBase {
 
   buildSpeakCommand ({ text, voice, speed }) {
     let args = [];
-    let pipedData = '';
+    let pipedData = "";
     let options = {};
 
     if (!voice) {
       args.push(text);
     } else {
-      args.push('-v', voice, text);
+      args.push("-v", voice, text);
     }
 
     if (speed) {
-      args.push('-r', this.convertSpeed(speed));
+      args.push("-r", this.convertSpeed(speed));
     }
 
     return { command: COMMAND, args, pipedData, options };
@@ -29,21 +29,21 @@ class SayPlatformDarwin extends SayPlatformBase {
 
   buildExportCommand ({ text, voice, speed, filename }) {
     let args = [];
-    let pipedData = '';
+    let pipedData = "";
     let options = {};
 
     if (!voice) {
       args.push(text);
     } else {
-      args.push('-v', voice, text);
+      args.push("-v", voice, text);
     }
 
     if (speed) {
-      args.push('-r', this.convertSpeed(speed));
+      args.push("-r", this.convertSpeed(speed));
     }
 
     if (filename) {
-      args.push('-o', filename, '--data-format=LEF32@32000');
+      args.push("-o", filename, "--data-format=LEF32@32000");
     }
 
     return { command: COMMAND, args, pipedData, options };
