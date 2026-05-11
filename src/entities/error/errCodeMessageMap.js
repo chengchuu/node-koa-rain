@@ -1,5 +1,3 @@
-"use strict";
-
 const errCodeMessageMap = new Map([
   [ "err_uid_params_error", "UID 参数错误" ],
   [ "err_not_find", "UID 不存在" ],

@@ -1,5 +1,3 @@
-"use strict";
-
 const errCodeMessageMap = require("./errCodeMessageMap");
 
 // 错误返回格式

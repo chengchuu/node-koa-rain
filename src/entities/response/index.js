@@ -1,5 +1,3 @@
-"use strict";
-
 // 格式化返回字段
 function rsp ({ ctx, ret = 0, info = "ok", message = "成功", data = {} } = {}) {
   const rspBody = {
