@@ -37,7 +37,21 @@ async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
 }
 
 // 内容是否存在
-async function sIsExistContent ({ content }) {
+async function sIsExistContent ({ ctx, content }) {
+  // 先在队列中判断没有再请求数据库
+  let { logContent = [] } = ctx;
+  let index = logContent.findIndex(item => item === content);
+  if (index > -1) {
+    return rsp({ message: '存在', data: { isExist: true } });
+  } else {
+    let len = logContent.length;
+    if (len >= 10) {
+      logContent.shift();
+      logContent.push(content);
+    } else {
+      logContent.push(content);
+    }
+  }
   return mIsExistContent({ content });
 }
 

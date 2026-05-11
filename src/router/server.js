@@ -33,6 +33,7 @@ const { sAddNewGame, sQueryAllGame, sQueryGame } = require('../service/game/game
 const { sAddNewScore, sQueryAllScore } = require('../service/game/score');
 const { sAddNewTags, sIsAddNewTags } = require('../service/game/tag');
 const { sGetChatInfo } = require('../service/chat');
+const { sUploadCard, sBatchAddCrab, sGetCardByNumber, sAddAddressByNumber, sUpdateCardByAddressNumber, sGetAddressByNumber, sGetCrabByNumber, sGetAddressInfo } = require('../service/card/card');
 const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
 // 校验
 server
@@ -260,9 +261,47 @@ server
     const { messages } = ctx.request.body;
     ctx.body = await sGetChatInfo(ctx, { messages });
   })
+  // 文字转语音
   .post('/synthesize', async ctx => {
     const { content } = ctx.request.body;
     ctx.body = await sSynthesize(ctx, { content });
+  })
+  // 批量增加提货卡数据(表格导入)
+  .post('/card/batch-add', async ctx => {
+    ctx.body = await sUploadCard(ctx);
+  })
+  // 批量增加货物信息(表格导入)
+  .post('/card/batch-add-crab', async ctx => {
+    ctx.body = await sBatchAddCrab(ctx);
+  })
+  // 通过卡号和密码判断有没有该提货卡
+  .post('/card/get-number', async ctx => {
+    const { card_number, card_password } = ctx.request.body;
+    ctx.body = await sGetCardByNumber({ card_number, card_password });
+  })
+  // 给某个卡号增加发货地址
+  .post('/card/add-address', async ctx => {
+    const { card_number, card_password, address_detail, address_user, address_mobile, address_date } = ctx.request.body;
+    ctx.body = await sAddAddressByNumber({ card_number, card_password, address_detail, address_user, address_mobile, address_date });
+  })
+  // 获取某卡号的收货地址
+  .post('/card/get-address', async ctx => {
+    const { card_number, card_password } = ctx.request.body;
+    ctx.body = await sGetAddressByNumber({ card_number, card_password });
+  })
+  // 给某卡号地址增加快递单号
+  .post('/card/update-address', async ctx => {
+    const { address_id, address_category, address_number } = ctx.request.body;
+    ctx.body = await sUpdateCardByAddressNumber({ address_id, address_category, address_number });
+  })
+  // 获取卡的详情
+  .post('/card/get-crab', async ctx => {
+    const { card_number, card_password } = ctx.request.body;
+    ctx.body = await sGetCrabByNumber({ card_number, card_password });
+  })
+  // 获取物流信息
+  .post('/card/get-logistics', async ctx => {
+    const { order_number } = ctx.request.body;
+    ctx.body = await sGetAddressInfo({ order_number });
   });
-
 module.exports = server;

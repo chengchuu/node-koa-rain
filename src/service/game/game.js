@@ -41,7 +41,6 @@ async function sQueryAllGame (ctx, { currentPage, pageSize }) {
 }
 // 查询单个游戏
 async function sQueryGame (ctx, { game_id }) {
-  console.log(ctx);
   const schema = Joi.object({
     game_id: Joi.string()
       .required()
