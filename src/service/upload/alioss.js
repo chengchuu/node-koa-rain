@@ -15,7 +15,7 @@ async function ossPut ({ region, accessKeyId, accessKeySecret, bucket, source, t
       return result.url;
     }
   } catch (e) {
-    console.error("oss error: ", e);
+    console.error("oss put:", e);
     return false;
   }
   return false;
@@ -38,6 +38,7 @@ async function ossMultipartUpload ({ region, accessKeyId, accessKeySecret, bucke
   } catch (e) {
     // 捕获超时异常。
     if (e.code === "ConnectionTimeoutError") {
+      console.error("oss timeout:", e);
     }
     return false;
   }

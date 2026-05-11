@@ -69,7 +69,7 @@ module.exports = {
     {
       files: [ "*.js" ],
       rules: {
-        "strict": [ "warn", "safe" ],
+        "strict": "off",
       },
     },
   ],
