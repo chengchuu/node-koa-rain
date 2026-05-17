@@ -120,7 +120,20 @@ async function mBatchAddCard (data) {
 // 两个外键
 MazeyCard.belongsTo(MazeyCrab, { foreignKey: "crab_id" });
 MazeyCard.belongsTo(MazeyAddress, { foreignKey: "address_id" });
-MazeyCard.sync();
+
+async function syncCardModels () {
+  try {
+    await MazeyCrab.sync();
+    await MazeyAddress.sync();
+    await MazeyCard.sync();
+  } catch (error) {
+    // Do not crash app startup if the optional card schema cannot be auto-created.
+    console.error("[card-model-sync] sync failed:", error.message);
+  }
+}
+
+syncCardModels();
+
 module.exports = {
   mCheckCardByNumber,
   mGetCardByNumber,

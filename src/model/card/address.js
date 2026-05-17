@@ -121,8 +121,6 @@ async function mUpdateAddress ({ card_number, address_id, address_detail, addres
     return err({ message: "该卡号不存在" });
   }
 }
-
-MazeyAddress.sync();
 module.exports = {
   MazeyAddress,
   mGetAddressByNumber,

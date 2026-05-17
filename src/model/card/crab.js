@@ -40,7 +40,6 @@ async function mBatchAddCrab (data) {
   }
   return rsp({ data: ret });
 }
-MazeyCrab.sync();
 module.exports = {
   MazeyCrab,
   mBatchAddCrab,
