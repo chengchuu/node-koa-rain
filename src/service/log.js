@@ -29,7 +29,7 @@ async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
   const AddLogRes = await mAddLog({ log_type: tempType, ip, content });
   if (AddLogRes.ret === 0) {
     if (isEncode) {
-      return rsp({ message: "success", data: { content } });
+      return rsp({ message: "success", data: { content: "success" } });
     }
     return AddLogRes;
   }
