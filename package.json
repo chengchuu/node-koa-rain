@@ -1,7 +1,7 @@
 {
   "name": "node-koa-rain",
   "version": "1.1.0",
-  "description": "NodeJS Koa Rain",
+  "description": "Node Koa Rain",
   "main": "src/app.js",
   "scripts": {
     "ins:npmjsorg": "npm i --registry=https://registry.npmjs.org",
