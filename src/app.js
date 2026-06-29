@@ -20,7 +20,10 @@ mkdir.mkdirs("video", err => {
 });
 // 请求日志
 app.use(async (ctx, next) => {
-  sAddLog({ ctx, logType: "request", content: `Rain ${ctx.method} ${ctx.path}` });
+  const path = ctx.path;
+  if (path !== "/server/log/add") {
+    sAddLog({ ctx, logType: "request", content: `Rain ${ctx.method} ${path}` });
+  }
   await next();
 });
 app.use(authMiddleware);
