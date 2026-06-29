@@ -6,7 +6,7 @@ const server = require("./router/server");
 const tiny = require("./router/tiny");
 const mkdir = require("./utils/mkdir");
 let schedule = require("node-schedule");
-const { sReportErrorInfo } = require("./service/log");
+const { sReportErrorInfo, sAddLog } = require("./service/log");
 const { authMiddleware } = require("./entities/jwt/index");
 // 实例
 const app = new Koa();
@@ -17,6 +17,11 @@ mkdir.mkdirs("temp", err => {
 });
 mkdir.mkdirs("video", err => {
   console.log("mkdirs video err", err); // 错误的话，直接打印如果地址跟
+});
+// 请求日志
+app.use(async (ctx, next) => {
+  sAddLog({ ctx, logType: "rain-request", content: `${ctx.method} ${ctx.path}` });
+  await next();
 });
 app.use(authMiddleware);
 // 上传文件
