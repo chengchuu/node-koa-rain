@@ -20,9 +20,9 @@ mkdir.mkdirs("video", err => {
 });
 // 请求日志
 app.use(async (ctx, next) => {
-  const path = ctx.path;
-  if (path !== "/server/log/add") {
-    sAddLog({ ctx, logType: "request", content: `Rain ${ctx.method} ${path}` });
+  const reqPath = ctx.path;
+  if (reqPath !== "/server/log/add") {
+    sAddLog({ ctx, logType: "request", content: `Rain ${ctx.method} ${reqPath}` });
   }
   await next();
 });
