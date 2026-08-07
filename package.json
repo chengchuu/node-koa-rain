@@ -1,7 +1,7 @@
 {
   "name": "node-koa-rain",
   "version": "1.1.0",
-  "description": "Mazey's Server",
+  "description": "Node Koa Rain",
   "main": "src/app.js",
   "scripts": {
     "ins:npmjsorg": "npm i --registry=https://registry.npmjs.org",
@@ -15,7 +15,7 @@
     "restart": "npm run stop && npm run start",
     "deploy": "node ./deploy.js"
   },
-  "author": "",
+  "author": "Cheng",
   "license": "ISC",
   "dependencies": {
     "ali-oss": "^6.10.0",
