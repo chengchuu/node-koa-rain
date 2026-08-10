@@ -11,10 +11,9 @@ async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
     content = JSON.stringify(content);
   }
   if (isEncode) {
-    // 对base64的数据进行解码
+    // 对 base64 的数据进行解码
     let buff = Buffer.from(content, "base64");
     content = buff.toString("utf-8");
-    // content = buff.toString('base64');
   }
   if (content && content.length >= 500) {
     return err({ message: "内容长度不能超过 500" });

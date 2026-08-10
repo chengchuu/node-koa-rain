@@ -27,7 +27,6 @@ async function restart () {
             })
             .stderr.on('data', function (data) {
               console.log('STDERR: ' + data);
-              // reject(`restart error: ${data}`);
             });
         });
       })
