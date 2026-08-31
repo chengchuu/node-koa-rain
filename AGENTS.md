@@ -1,241 +1,182 @@
 # AGENTS.md
 
-## Purpose
+## Project Overview
 
-This repository is a small Koa-based backend service. It exposes APIs for:
+`node-koa-rain` is a JavaScript/CommonJS backend built on Koa 2 and Sequelize. It provides user and JWT APIs, short links, uploads and asset metadata, visitor/weather reporting, robot notifications, reading-club features, game data, card/address workflows, and experimental chat and speech endpoints.
 
-- user registration, login, and token generation
-- short-link generation and redirect
-- file upload and asset metadata management
-- visitor/IP/weather reporting
-- robot notification integrations
-- reading-club features under `nut/*`
-- game, score, and tag features
-- card, address, and logistics-related flows under `card/*`
-- experimental chat and text-to-speech endpoints
+The dominant dependency direction is:
 
-The codebase is mostly organized as:
+`router -> service -> model -> MySQL`
 
-`router -> service -> model -> MySQL / external API`
+Services also call external HTTP APIs, write local files, and send robot notifications. The boundaries are pragmatic rather than strict: some routers call models directly, and several services combine validation, persistence, and side effects.
 
-That layering is not perfectly strict. Some routes still call models directly, and some services mix validation, persistence, and side effects.
+## Runtime Contract
 
-## Runtime
+- Runtime target: Node.js `10.x`
+- Web framework: Koa `2.x`
+- Language: JavaScript only
+- Module system: CommonJS (`require`/`module.exports`)
+- Database: MySQL through Sequelize 6
+- Process manager: PM2
 
-- Node.js `10.x`
-- Koa `2.x`
-- CommonJS modules
-- JavaScript only, no TypeScript
-
-Keep new code compatible with Node.js 10 syntax and older tooling. Avoid ESM, top-level `await`, optional chaining, nullish coalescing, and other newer syntax unless the runtime/tooling target is explicitly changed.
+Keep changes parseable by Node.js 10. Do not introduce ESM, top-level `await`, optional chaining, nullish coalescing, class fields, or other newer syntax without changing the runtime contract and tooling first. The ESLint parser target is ECMAScript 2018.
 
 ## Entry Points
 
-- Runtime entry: `src/app.js`
-- Main API router: `src/router/server.js`
-- Short-link redirect router: `src/router/tiny.js`
+- `src/app.js`: runtime bootstrap and HTTP listener on port `3224`
+- `src/router/server.js`: routes mounted below `/server`
+- `src/router/tiny.js`: redirect routes mounted below `/t`
+- `deploy.js`: SSH deployment helper used by `npm run deploy`
+- `webpack.config.js`: bundles only `deploy.js`; it is not the server build pipeline
 
-`package.json` starts the service with PM2 and points `main` to `src/app.js`.
+`package.json` points `main` to `src/app.js`. There is no compilation step for the server.
 
-## Folder Map
+## Repository Map
 
-- `src/app.js`
-  Koa bootstrap, multipart parsing, router mounting, app-level caches, error hook, port binding.
-- `src/router`
-  HTTP route layer. Most handlers are thin and delegate into services.
-- `src/service`
-  Business logic, orchestration, validation, third-party HTTP calls, filesystem side effects, and robot notifications.
-- `src/model`
-  Sequelize models and query/update helpers.
-- `src/entities`
-  Cross-cutting infrastructure such as ORM setup, JWT auth, responses, and errors.
-- `src/config`
-  Environment-specific config and shared app constants.
-- `src/utils`
-  Helpers, including the local `say` implementation under `src/utils/say`.
+- `src/app.js`: creates directories, installs middleware, owns process-local caches, mounts routers, schedules cache clearing, and reports app errors.
+- `src/router/`: HTTP routing and extraction of request parameters.
+- `src/service/`: business orchestration, Joi validation, external calls, filesystem work, and notification side effects.
+- `src/model/`: Sequelize definitions and persistence helpers.
+- `src/entities/orm.js`: shared Sequelize/MySQL connection.
+- `src/entities/jwt/`: token creation and path-based authentication middleware.
+- `src/entities/response/`: standard `rsp(...)` and `rspPage(...)` response envelopes.
+- `src/entities/error/`: standard `err(...)` error envelopes and error codes.
+- `src/config/`: environment configuration loader and the checked-in development configuration.
+- `src/utils/`: shared utilities and the vendored cross-platform `say` implementation.
+- `temp/`: multipart upload staging directory, created at startup.
+- `video/`: local media directory, created at startup.
+- `eslint-rules/`: local rule experiments; these rules are not currently wired into `npm run lint`.
 
-Subdomains worth knowing:
+Feature areas:
 
-- `src/service/nut`, `src/model/nut`
-  Reading-club features.
-- `src/service/game`, `src/model/game`
-  Games, scores, tags, and related dictionaries.
-- `src/service/card`, `src/model/card`
-  Card import, card lookup, address updates, crab metadata, and logistics lookup.
-- `src/service/upload`
-  Uploads, asset records, OSS config management, and text-to-speech export.
-- `src/service/robot`
-  Robot scheduling, messaging, and duplicate-log suppression.
+- `src/service/nut/`, `src/model/nut/`: reading cards, notes, likes, achievements, and reporting.
+- `src/service/game/`, `src/model/game/`: games, scores, tags, and dictionary data.
+- `src/service/card/`, `src/model/card/`: Excel card imports, crab metadata, ownership checks, addresses, and logistics.
+- `src/service/upload/`: uploads, asset records, OSS configuration, and speech synthesis.
+- `src/service/robot/`: robot integrations, reminders, scheduling, and messages.
 
-## Important Modules
+## Startup And Request Flow
 
-- `src/entities/orm.js`
-  Creates the shared Sequelize connection.
-- `src/entities/jwt/index.js`
-  JWT creation and request auth middleware.
-  Auth is path-based and enforced only for a route allowlist.
-- `src/entities/response/index.js`
-  Standard `rsp(...)` and `rspPage(...)` helpers.
-- `src/entities/error/index.js`
-  Standard `err(...)` helper and error-code mapping.
-- `src/service/log.js`
-  Log persistence, duplicate-content checks, and error reporting to robots.
-- `src/service/tiny.js`
-  Short-link creation and lookup with in-memory cache usage.
-- `src/service/upload/index.js`
-  Upload handling, asset persistence, OSS config operations, and speech export.
-- `src/service/card/card.js`
-  Card import, card ownership checks, address update flow, and logistics lookup.
-- `src/service/robot/robot.js`
-  Most robot integrations and schedule-driven reminders.
+At module load/startup, `src/app.js`:
 
-## Request Flow
+1. Loads routers and services through top-level imports; these imports can trigger Sequelize model synchronization.
+2. Creates `temp` and `video` if absent.
+3. Installs request logging. Every request except `/server/log/add` is submitted to `sAddLog(...)` without awaiting completion.
+4. Installs `authMiddleware`.
+5. Installs `koa-body` for JSON and multipart parsing, using `temp` for uploaded files.
+6. Initializes `app.context.linkMap` and `app.context.logContent`.
+7. Schedules `linkMap` replacement with `*/60 * * * *`, which runs at minute zero of each hour.
+8. Mounts `/server` and `/t`, registers the app error hook, and listens on port `3224`.
 
-Typical request lifecycle:
-
-1. Request enters Koa in `src/app.js`.
-2. `authMiddleware` runs first.
-   It only protects selected routes listed inside `src/entities/jwt/index.js`.
-3. `koa-body` parses JSON and multipart form data.
-4. Request is routed to:
-   - `/server/*` via `src/router/server.js`
-   - `/t/*` via `src/router/tiny.js`
-5. Router delegates to a service function.
-6. Service may:
-   - validate with `Joi`
-   - read/write MySQL through model helpers
-   - call third-party APIs through `axios`
-   - write files locally
-   - send robot notifications
-7. Response is usually shaped with `rsp(...)` or `err(...)`.
+A typical request then flows through logging, path-based authentication, body parsing, router, service, and model/external side effects. Responses normally use `rsp(...)` or `err(...)`, but this is not universally enforced.
 
 ## Main Data Flows
 
-### Short links
+### Short Links
 
-- Create:
-  `POST /server/generate/short-link`
-  -> `src/service/tiny.js`
-  -> `src/model/tiny.js`
-- Resolve:
-  `GET /t/:key`
-  -> `src/router/tiny.js`
-  -> `src/service/tiny.js`
-  -> `app.context.linkMap` cache, then DB fallback
-  -> HTTP 302 redirect
+- Creation: `POST /server/generate/short-link` -> `src/service/tiny.js` -> `src/model/tiny.js` -> MySQL.
+- Cache inspection: `GET /server/get/link-map` -> `sGetLinkMap(ctx)` -> serialized `app.context.linkMap` entries.
+- Redirect: `GET /t/:key` -> `queryOriLinkByKey(...)` -> built-in special links, then `linkMap`, then MySQL -> HTTP 302.
+- Unknown keys fall back to `https://blog.mazey.net/tiny`.
 
-### Uploads and assets
+The cache is process-local and is neither shared across PM2 workers nor durable across restarts.
 
-- `koa-body` writes uploads into the temp directory configured in `src/app.js`
-- `src/service/upload/index.js` inspects the file, writes it to a target path, and saves metadata
-- `src/model/asset.js` stores the asset record in MySQL
+### Uploads And Assets
 
-### Card flow
+- `koa-body` stages multipart files in `temp`.
+- `src/service/upload/index.js` reads the staged file, chooses a destination, writes it locally, and delegates metadata persistence to `src/model/asset.js`.
+- The same service manages OSS configuration records and exposes two speech-synthesis handlers.
 
-- Import cards:
-  `POST /server/card/batch-add`
-  -> `src/service/card/card.js`
-  -> Excel parsing with `exceljs`
-  -> `src/model/card/card.js`
-- Import crab metadata:
-  `POST /server/card/batch-add-crab`
-  -> `src/service/card/card.js`
-  -> `src/model/card/crab.js`
-- Card lookup:
-  `POST /server/card/get-number`
-  -> password check via `mCheckCardByNumber(...)`
-- Address lookup/update:
-  `POST /server/card/get-address`
-  `POST /server/card/add-address`
-  `POST /server/card/update-address`
-  -> `src/service/card/card.js`
-  -> `src/model/card/address.js`
-  -> `src/model/card/card.js`
-  -> optional robot notification
-- Logistics lookup:
-  `POST /server/card/get-logistics`
-  -> `src/service/card/card.js`
-  -> external SF API
+Treat client-supplied upload targets as filesystem input and validate them before expanding this behavior.
 
-### Reading club
+### Reading Club
 
-- `src/router/server.js` exposes `nut/*`
-- `src/service/nut/read.js` contains the main business logic
-- `src/model/nut/*` persists cards, notes, likes, and achievement-related data
-- robot notifications are triggered as side effects
+- `/server/nut/*` routes delegate mainly to `src/service/nut/read.js`.
+- `src/model/nut/*` stores reading cards, notes, likes, and related statistics.
+- Robot notifications are side effects of several reading operations.
 
-### Visitors and weather
+### Card And Address Flows
 
-- `/server/ip` collects request metadata
-- `src/service/ip.js` calls external IP and weather APIs
-- `src/model/visitor.js` stores visitor records
+- Card and crab batch imports parse uploaded spreadsheets with `exceljs`.
+- Card lookup checks `card_number` and `card_password` through `src/model/card/card.js`.
+- Address operations use `src/model/card/address.js` and update card state through `src/model/card/card.js`.
+- Logistics lookup calls the SF sandbox API only when a `logistics` configuration object is available.
 
-### Logging and alerting
+`src/model/card/card.js` synchronizes crab, address, and card tables sequentially at import time and catches synchronization errors so optional card schema failures do not terminate startup.
 
-- App-level errors are handled in `src/app.js`
-- `src/service/log.js` stores logs and forwards error content to robot integrations
-- `app.context.logContent` is used as a small in-memory dedupe buffer for some robot messages
+### Logging And Alerts
 
-## Project-Specific Behaviors
+- Request logs and explicit `/server/log/*` operations persist through `src/service/log.js`.
+- `app.context.logContent` is a small process-local duplicate-suppression buffer.
+- App-level errors are passed to `sReportErrorInfo(...)`, which can notify robot integrations.
 
-- The service listens on port `3224`.
-- `app.context.linkMap` is an in-memory short-link cache and is cleared on a schedule.
-- `app.context.logContent` is an in-memory array used for duplicate-log suppression.
-- `src/app.js` creates `temp` and `video` directories on startup.
-- Many model files call `.sync()` at import time, so simply importing modules can trigger schema side effects.
-- Auth is not role-based; it is a hard-coded route allowlist in `src/entities/jwt/index.js`.
-- This repository includes committed environment/config placeholders or secrets-style values in `src/config/env.development.js` instead of using a fully externalized config model.
+## Authentication And Security
 
-## Configuration Notes
+Authentication is not applied globally and is not role-based. `src/entities/jwt/index.js` checks an exact hard-coded path allowlist; routes absent from that list are public. Query strings are removed before matching.
 
-- Config is loaded from `src/config/env.${NODE_ENV}.js` through `src/config/index.js`.
-- `tinyBaseUrl` and `assetsBaseUrl` are assigned in `src/config/index.js`.
-- If you add a new external integration, prefer adding explicit config keys to the env config rather than hard-coding them inside services.
+When adding or changing a route, explicitly decide whether it belongs in the protected-path list. For card, upload, log, chat, and data-mutation endpoints, verify both authentication and resource ownership rather than assuming the router is protected.
 
-## Tooling
+The JWT signing secret and several integration-style values are currently stored in source. Do not add new credentials to the repository; prefer environment-backed configuration.
 
-- ESLint uses classic `.eslintrc.js`, not flat config.
-- The repo currently targets `eslint@7.x` with `eslint-plugin-node`.
-- Linting is warning-heavy and intended to be compatible with Node 10-era code.
-- The lint script is:
-  `npm run lint`
+## Database Behavior
 
-## Developer Commands
+- `src/entities/orm.js` creates one shared Sequelize instance with MySQL and timezone `+08:00`.
+- Many model modules call `.sync()` during import. Starting the app, importing a router, or running an isolated script can therefore query or mutate the database schema.
+- Most model helpers return response envelopes directly, coupling persistence code to the HTTP response format.
+- Some legacy helpers use `.catch(console.error)`, which can turn database failures into later null/undefined behavior.
 
-- Install dependencies: `npm install`
-- Run in development: `npm run dev`
-- Run in production mode with PM2: `npm run start`
-- Stop PM2 process: `npm run stop`
-- Restart: `npm run restart`
-- Lint and fix: `npm run lint`
+Do not assume importing a model is side-effect free. Prefer explicit migrations for new production schema work rather than adding more import-time synchronization.
 
-## Editing Guidance
+## Configuration
 
-- Keep route handlers thin when possible.
-- Prefer business logic in `src/service/*` and DB logic in `src/model/*`.
-- Reuse `rsp(...)` and `err(...)` for API responses.
-- Be careful when changing `src/entities/jwt/index.js`.
-  Route protection is currently path-based, so adding a route may also require updating the auth allowlist.
-- Be careful when changing imports around model files because `.sync()` runs during module load.
-- If touching upload, speech, or short-link code, verify both filesystem/cache behavior and DB behavior.
-- If touching card endpoints, review authentication and ownership checks carefully.
-- If touching robot/log code, check both the DB path and the in-memory dedupe path.
+`src/config/index.js` loads `src/config/env.${NODE_ENV}.js`, then derives `tinyBaseUrl` and `assetsBaseUrl`. Only `src/config/env.development.js` is checked in. `npm run start` sets `NODE_ENV=production`, so production requires an externally supplied `src/config/env.production.js` or an intentional configuration refactor.
 
-## Known Rough Edges
+The checked-in development config contains placeholders for MySQL, JWT, weather, email, and robot integrations. It does not currently provide the `logistics` object expected by the card logistics service. The config loader also logs the loaded configuration object, so avoid placing secrets there without first removing or sanitizing that output.
 
-- `src/service/chat.js` is experimental and currently not production-ready.
-- `src/service/upload/index.js` speech export uses the local `say` wrapper and may have platform-specific behavior.
-- `src/service/card/card.js` expects logistics config for the SF lookup route; verify env config before relying on that endpoint.
-- Large formatting-only or lint-only branches can still carry behavior changes in this repo because feature work and cleanup have sometimes landed together.
+## Commands And Tooling
 
-## Good First Places To Read
+- Install: `npm install`
+- Development under `pm2-dev`: `npm run dev`
+- Production under PM2: `npm run start`
+- Foreground production-style PM2 run: `npm run start:nodaemon`
+- Stop/restart PM2: `npm run stop` / `npm run restart`
+- Lint and auto-fix: `npm run lint`
+- Deploy over SSH: `npm run deploy`
 
-- `src/app.js`
-- `src/router/server.js`
-- `src/entities/jwt/index.js`
-- `src/service/tiny.js`
-- `src/service/upload/index.js`
-- `src/service/card/card.js`
-- `src/service/nut/read.js`
-- `src/service/robot/robot.js`
-- `src/entities/orm.js`
+ESLint uses classic `.eslintrc.js` with `eslint@7.32.0` and `eslint-plugin-node@11.1.0`. Most formatting findings are warnings, and the lint command includes `--fix`, so it modifies files. The repository has no automated test suite or `test` script; validation currently depends on linting and targeted manual/runtime checks.
+
+`deploy.js` contains connection placeholders and executes `git pull`, `npm i`, and `npm run restart` remotely. Do not run deployment as routine validation.
+
+## Change Guidance
+
+- Keep routers thin; put orchestration in `src/service/*` and persistence in `src/model/*` when practical.
+- Preserve `rsp(...)`, `rspPage(...)`, and `err(...)` response shapes for existing APIs.
+- Check the JWT protected-path list whenever routes are added or renamed.
+- Account for import-time `.sync()` and external service calls in tests and scripts.
+- Validate filesystem paths for upload changes and await callback-based work before returning success.
+- Verify cache behavior across restart and multi-process deployment for short-link or log-deduplication changes.
+- For card changes, verify authentication, card ownership, affected-row counts, schema ordering, and missing logistics configuration.
+- For robot/log changes, verify both database writes and in-memory duplicate suppression.
+- Preserve unrelated work in the working tree and keep patches narrow.
+
+## Known Production Risks
+
+- `src/service/chat.js` is experimental: its upstream request and success response handling are not production-ready.
+- Speech export in `src/service/upload/index.js` relies on callback-based, platform-specific `say` backends; the current route can return before the output file exists.
+- The logistics endpoint cannot perform its intended lookup with the checked-in configuration.
+- Process-local caches diverge across workers and reset on restart.
+- Import-time schema synchronization makes startup database-dependent and can create production schema side effects.
+- Several routes that read or mutate sensitive data remain public unless explicitly added to the JWT path list.
+
+## First Files To Read
+
+1. `src/app.js`
+2. `src/router/server.js`
+3. `src/entities/jwt/index.js`
+4. `src/config/index.js`
+5. `src/entities/orm.js`
+6. `src/service/tiny.js`
+7. `src/service/upload/index.js`
+8. `src/service/card/card.js`
+9. `src/service/nut/read.js`
+10. `src/service/robot/robot.js`
