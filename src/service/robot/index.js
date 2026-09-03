@@ -12,7 +12,7 @@ const weComRobotUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send";
 const feishuRobotUrl = "https://open.feishu.cn/open-apis/bot/v2/hook";
 
 // 机器人发送常规消息，type: info/绿色 comment/灰色 warning/黄色
-function sRobotSendColorText ({ type = "", message = "", messageFn = undefined, duration = "", key = "", immediately = false, isSkipDayOffDates = false } = {}) {
+function sRobotSendColorText({ type = "", message = "", messageFn = undefined, duration = "", key = "", immediately = false, isSkipDayOffDates = false } = {}) {
   const fn = async () => {
     // 判断消息是否由函数生成
     if (messageFn) {
@@ -51,7 +51,7 @@ function sRobotSendColorText ({ type = "", message = "", messageFn = undefined, 
  * @method isDayOffDates
  * @desc 判断是否在特殊休息日
  */
-function isDayOffDates () {
+function isDayOffDates() {
   const n = new Date();
   if (dayOffDates.some(dateStr => isSameDay(new Date(dateStr), n))) {
     return rsp({ info: "yes", message: "今日休息" });
@@ -63,7 +63,7 @@ function isDayOffDates () {
  * @method sGetRobotKeyByAlias
  * @desc 根据别名查找企业微信机器人的 Key 值
  */
-function sGetRobotKeyByAlias ({ alias = "" } = {}) {
+function sGetRobotKeyByAlias({ alias = "" } = {}) {
   if (!alias) {
     return err({ message: "别名不能为空" });
   }
@@ -93,7 +93,7 @@ function sGetRobotKeyByAlias ({ alias = "" } = {}) {
  * @param {Boolean} isSkipDayOffDates 是否跳过特殊休息日，例如：节假日、调休
  * @return {Promise/Object} 结果
  */
-function sCommonRobotSend ({ target = "workweixin", alias = "", type = "", data = {}, dataFn = undefined, duration = "", immediately = false, isSkipDayOffDates = false } = {}) {
+function sCommonRobotSend({ target = "workweixin", alias = "", type = "", data = {}, dataFn = undefined, duration = "", immediately = false, isSkipDayOffDates = false } = {}) {
   // `[飞书消息去重防吞: ${}]`
   const feishuNot = () => {
     const r = generateRndNum(7);
@@ -169,11 +169,11 @@ function sCommonRobotSend ({ target = "workweixin", alias = "", type = "", data 
         postData = {
           msgtype: type,
           [type]: data,
-        // text: {},
-        // markdown: {},
-        // image: {},
-        // news: {},
-        // file: {},
+          // text: {},
+          // markdown: {},
+          // image: {},
+          // news: {},
+          // file: {},
         };
         break;
       case "feishu":
@@ -207,9 +207,7 @@ function sCommonRobotSend ({ target = "workweixin", alias = "", type = "", data 
       default:
         url = "";
     }
-    console.log("sCommonRobotSend postData", postData);
     console.log("sCommonRobotSend url", url);
-    console.log("sCommonRobotSend key", key);
     return axios.post(url, postData).catch(console.error);
   };
   if (immediately) {
@@ -222,7 +220,7 @@ function sCommonRobotSend ({ target = "workweixin", alias = "", type = "", data 
 }
 
 // 提醒和白开水
-function sRobotRemindForLowSugarFruits ({ duration = "", alias = "", immediately = false, isSkipDayOffDates = false } = {}) {
+function sRobotRemindForLowSugarFruits({ duration = "", alias = "", immediately = false, isSkipDayOffDates = false } = {}) {
   return sCommonRobotSend({
     alias,
     type: "news",
@@ -261,7 +259,7 @@ function sRobotRemindForLowSugarFruits ({ duration = "", alias = "", immediately
   });
 }
 
-function repeatSend (fn, timeout = 3000) {
+function repeatSend(fn, timeout = 3000) {
   setTimeout(() => {
     fn();
   }, timeout);

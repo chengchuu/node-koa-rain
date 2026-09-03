@@ -6,7 +6,7 @@ const nodemailer = require("nodemailer");
 const { $email_name, $email_key } = require("../config/env.development");
 const Joi = require("joi");
 // 校验邮箱
-async function sUpdateCodeStatus (ctx, user_email, code) {
+async function sUpdateCodeStatus(ctx, user_email, code) {
   const schema = Joi.object({
     user_email: Joi.string()
       .required()
@@ -43,8 +43,7 @@ async function sUpdateCodeStatus (ctx, user_email, code) {
   return rsp({ data: {} });
 }
 // 给邮箱发送验证码
-async function sendMail (sendMail) {
-  console.log("sendMail", sendMail);
+async function sendMail(sendMail) {
   const config = {
     service: "163",
     secure: true,
@@ -67,7 +66,7 @@ async function sendMail (sendMail) {
     // 这里可以添加html标签
     html: code,
   };
-  transporter.sendMail(mail, function (error, info) {
+  transporter.sendMail(mail, function(error, info) {
     if (error) {
       return false;
     }

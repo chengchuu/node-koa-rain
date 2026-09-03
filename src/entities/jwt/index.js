@@ -5,15 +5,14 @@ const config = {
   secret: "20230319123456**",
   time: 60 * 60 * 24,
 };
-function jwtCreate (data, time) {
-  console.log("执行了嘛");
+function jwtCreate(data, time) {
   let token = jwt.sign(data, config.secret, {
     algorithm: "HS256",
     expiresIn: time || config.time,
   });
   return token;
 }
-async function authMiddleware (ctx, next) {
+async function authMiddleware(ctx, next) {
   // 暂时只加五个接口
   const token = ctx.headers.authorization;
   let authorList = [
@@ -54,8 +53,8 @@ async function authMiddleware (ctx, next) {
     ctx.throw(500, "Internal server error");
   }
 }
-function jwtVerify (token) {
-  return jwt.verify(token, config.secret, function (err, jwtDecoded) {
+function jwtVerify(token) {
+  return jwt.verify(token, config.secret, function(err, jwtDecoded) {
     if (err) {
       return {
         code: 1,
@@ -71,7 +70,7 @@ function jwtVerify (token) {
     }
   });
 }
-function jwtDecoded (token, complete = true) {
+function jwtDecoded(token, complete = true) {
   return jwt.decode(token, {
     complete,
   });

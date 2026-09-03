@@ -15,10 +15,10 @@ const app = new Koa();
 const router = new Router();
 // 创建 temp
 mkdir.mkdirs("temp", err => {
-  console.log("mkdirs temp err", err); // 错误的话，直接打印如果地址跟
+  console.log("mkdirs temp err", err);
 });
 mkdir.mkdirs("video", err => {
-  console.log("mkdirs video err", err); // 错误的话，直接打印如果地址跟
+  console.log("mkdirs video err", err);
 });
 // 请求日志
 app.use(async (ctx, next) => {

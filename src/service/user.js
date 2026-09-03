@@ -14,7 +14,7 @@ const md5 = require("md5");
 // 校验
 const Joi = require("joi");
 // 获取 uid
-async function sGetUid (ctx) {
+async function sGetUid(ctx) {
   if (ctx.query.uid) return rsp({ data: { uid: Number(ctx.query.uid) } });
   const uidRes = await getUid(ctx.query);
   if (uidRes === false) {
@@ -28,7 +28,7 @@ async function sGetUid (ctx) {
 }
 
 // 获取用户 IP 城市 天气
-async function sGetUserInfo (ctx) {
+async function sGetUserInfo(ctx) {
   // ip
   const headers = ctx.request.headers;
   const XForwardedFor = headers["x-forwarded-for"] || "";
@@ -77,7 +77,7 @@ async function sGetUserInfo (ctx) {
         results: [ { daily } ],
       } = await weatherIns
         .getWeatherDaily(weatherLocation)
-        .then(function (data) {
+        .then(function(data) {
           return data;
         })
         .catch(console.error));
@@ -93,7 +93,7 @@ async function sGetUserInfo (ctx) {
   return rsp({ data: { ip, location, weather } });
 }
 
-async function sAddNewUser (ctx, nick_name, real_name = "", user_password = "", user_email = "") {
+async function sAddNewUser(ctx, nick_name, real_name = "", user_password = "", user_email = "") {
   const schema = Joi.object({
     nick_name: Joi.string()
       .pattern(new RegExp("^[a-zA-Z\u4e00-\u9fa5][a-zA-Z0-9\u4e00-\u9fa5]*$"))
@@ -151,7 +151,6 @@ async function sAddNewUser (ctx, nick_name, real_name = "", user_password = "", 
     return acquireNewUserRes;
   }
   let sendMailCode = await sendMail(user_email);
-  console.log("sendMailCode", sendMailCode);
   let user_id = acquireNewUserRes.data.user_id;
   acquireNewCode({
     user_id,
@@ -166,7 +165,7 @@ async function sAddNewUser (ctx, nick_name, real_name = "", user_password = "", 
 }
 
 // 添加新用户
-async function sGetIP (ctx) {
+async function sGetIP(ctx) {
   const headers = ctx.request.headers;
   const XForwardedFor = headers["x-forwarded-for"] || "";
   const ip = (XForwardedFor.split(", ") && XForwardedFor.split(", ")[0]) || "0.0.0.0";
@@ -174,7 +173,7 @@ async function sGetIP (ctx) {
 }
 
 // 登录
-async function sLogin ({ ctx, user_name, user_password }) {
+async function sLogin({ ctx, user_name, user_password }) {
   console.log("_ ctx:", ctx);
   if (!user_name) {
     return err({ message: "请输入用户名" });
@@ -186,7 +185,7 @@ async function sLogin ({ ctx, user_name, user_password }) {
 }
 
 // 生成 Token
-function sGenToken ({ str }) {
+function sGenToken({ str }) {
   return mGenToken({ str });
 }
 
