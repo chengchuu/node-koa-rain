@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { err } = require("../entities/err");
 const { rsp } = require("../entities/response");
 const { updateCodeStatus, acquireNotExpireCode } = require("../model/code");
@@ -26,7 +27,6 @@ async function sUpdateCodeStatus(ctx, user_email, code) {
     user_email,
     code,
   });
-  console.log("updateCodeStatusRes", updateCodeStatusRes);
   if (updateCodeStatusRes.ret !== 0) {
     return updateCodeStatusRes;
   }
@@ -71,7 +71,7 @@ async function sendMail(sendMail) {
       return false;
     }
     transporter.close();
-    console.log("mail sent:", info.response);
+    logger.info("[code] verification email sent");
     return code;
   });
   return code;

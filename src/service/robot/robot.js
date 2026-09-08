@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 /* eslint-disable max-lines */
 // 机器人 应用层
 const schedule = require("node-schedule");
@@ -32,7 +33,9 @@ function sRobotSendText ({ message = "", duration = "", key = "", immediately = 
           content: message,
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] text message delivery failed");
+      });
   };
   if (immediately) {
     return fn();
@@ -63,7 +66,9 @@ function sRobotSendImage ({ image = null, duration = "", key = "", immediately =
         msgtype: "image",
         image: realImage,
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] image message delivery failed");
+      });
   };
   if (immediately) {
     return fn();
@@ -98,7 +103,9 @@ function sRobotSendNews ({ title = "", description = "", url = "", picurl = "", 
           ],
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] news message delivery failed");
+      });
   };
   if (immediately) {
     return fn();
@@ -213,7 +220,9 @@ function sRobotRemindForDrinkWater ({
           ],
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] hydration reminder failed");
+      });
   };
   if (immediately) {
     return fn();
@@ -241,8 +250,6 @@ async function sRobotRemindFeperf (ctx) {
   const theDayBeforeYesterday = format(subDays(new Date(), 2), "yyyy-MM-dd");
   const tomorrowIns = perfDays.find(({ report_day }) => report_day === tomorrow);
   const theDayBeforeYesterdayIns = perfDays.find(({ report_day }) => report_day === theDayBeforeYesterday);
-  console.log("tomorrow", tomorrow);
-  console.log("theDayBeforeYesterday", theDayBeforeYesterday);
   if (!tomorrowIns || !theDayBeforeYesterdayIns) {
     // message = '数据缺失';
     return err({ message: "数据缺失" });
@@ -306,7 +313,9 @@ async function sRobotRemindFeperf (ctx) {
       content,
     },
     immediately: true,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[robot] performance reminder failed");
+  });
   if (!res) {
     return err({ message: "接口错误" });
   }
@@ -326,7 +335,9 @@ async function sRobotRemindCardAddress ({ card_number, address_detail, address_u
       content,
     },
     immediately: true,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[robot] address notification failed");
+  });
   if (!res) {
     return err({ message: "接口错误" });
   }
@@ -430,7 +441,9 @@ async function sRobotRemindForConfirmTag ({ ctx, user_id, user_name, game_id, ta
           content: ret,
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] tag review notification failed");
+      });
     if (!res) {
       return err({ message: "接口错误" });
     }
@@ -517,7 +530,9 @@ async function sRobotRemindForCommonTag ({ ctx, tags = [], contents = [], extra 
           content: ret,
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] tagged notification failed");
+      });
     if (!res) {
       return err({ message: "接口错误" });
     }

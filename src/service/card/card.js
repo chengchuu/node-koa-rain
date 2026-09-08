@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 // const fs = require('fs');
 // const path = require('path');
 const { rsp } = require("../../entities/response");
@@ -55,7 +56,6 @@ async function sUploadCard(ctx) {
       });
     }
   });
-  console.log("data", data);
   // 批量导入数据
   const mBatchAddCardRes = await mBatchAddCard(data);
   return mBatchAddCardRes;
@@ -82,7 +82,6 @@ async function sBatchAddCrab(ctx) {
       });
     }
   });
-  console.log("data", data);
   // 批量导入数据
   const mBatchAddCrabRes = await mBatchAddCrab(data);
   return mBatchAddCrabRes;
@@ -110,7 +109,6 @@ async function sGetCrabByNumber({ card_number, card_password }) {
   return mGetCrabByNumberRes;
 }
 async function sAddAddressByNumber({ card_number, card_password, address_id, address_detail, address_user, address_mobile, address_date }) {
-  console.log("address_detail", card_number, address_detail, address_user, address_mobile, address_date);
   const schema = Joi.object({
     card_number: Joi.string()
       .required()
@@ -155,7 +153,6 @@ async function sAddAddressByNumber({ card_number, card_password, address_id, add
     return mUpdateAddressRes;
   }
   const mGetCrabByNumberRes = await mGetCardByNumber({ card_number });
-  console.log("mGetCrabByNumberRes", mGetCrabByNumberRes);
   if (mGetCrabByNumberRes && mGetCrabByNumberRes.data) {
     const { MazeyAddress } = mGetCrabByNumberRes.data;
     if (MazeyAddress && MazeyAddress.address_id) {
@@ -232,10 +229,8 @@ async function sGetAddressInfo({ order_number }) {
         "Content-type": "application/x-www-form-urlencoded;charset=UTF-8",
       },
     });
-    console.log("accessTokenRes", accessTokenRes);
     const { data } = accessTokenRes;
     params.accessToken = data.accessToken;
-    console.log("params", params);
     const encodedData = querystring.stringify(params);
     let addressResult = await axios.post("https://sfapi-sbox.sf-express.com/std/service", encodedData, {
       headers: {
@@ -243,10 +238,9 @@ async function sGetAddressInfo({ order_number }) {
       },
     });
     let addressData = addressResult.data;
-    console.log("addressResult", addressResult);
     return rsp({ data: addressData.apiResultData });
   } catch (error) {
-    console.error("sf error:", error);
+    logger.error({ err: error }, "[card] logistics lookup failed");
     return err({ message: "接口错误" });
   }
 }

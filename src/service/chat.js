@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const axios = require("axios");
 const { err } = require("../entities/err");
 async function sGetChatInfo (ctx, { messages }) {
@@ -16,7 +17,9 @@ async function sGetChatInfo (ctx, { messages }) {
           "Content-Type": "application/json",
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[chat] upstream request failed");
+      });
   } catch (error) {
     return err({ message: "chat error" });
   }

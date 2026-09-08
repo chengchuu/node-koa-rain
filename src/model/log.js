@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes } = require("sequelize");
 const { rsp } = require("../entities/response");
@@ -45,7 +46,9 @@ MazeyLog.sync();
 
 // 新增日志
 async function mAddLog ({ log_type, ip, content }) {
-  const cRes = await MazeyLog.create({ log_type, ip, content }).catch(console.error);
+  const cRes = await MazeyLog.create({ log_type, ip, content }).catch(error => {
+    logger.error({ err: error }, "[log] log creation failed");
+  });
   if (cRes && cRes.dataValues) {
     return rsp({ message: "添加成功", data: cRes.dataValues });
   }
@@ -58,7 +61,9 @@ async function mIsExistContent ({ content }) {
     where: {
       content,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[log] content lookup failed");
+  });
   if (!isNumber(cRes)) {
     return err();
   }

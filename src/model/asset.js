@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes } = require("sequelize");
 const { mGetUserNameByPassword } = require("./user");
@@ -57,13 +58,14 @@ MazeyAsset.sync();
 // 新增上传资源
 async function newAsset ({ asset_link, asset_oss_id, asset_file_name, asset_show_link, asset_oss_link, asset_target, asset_type, asset_size, asset_operator_id, user_id }) {
   return MazeyAsset.create({ asset_link, asset_oss_id: user_id || asset_oss_id, asset_file_name, asset_show_link, asset_oss_link, asset_target, asset_type, asset_size, asset_operator_id }).catch(
-    console.error,
+    error => {
+      logger.error({ err: error }, "[asset] asset creation failed");
+    },
   );
 }
 
 // 查询静态资源
 async function getAsset ({ asset_operator_id, user_id, limit }) {
-  console.log("_ asset_operator_id:", asset_operator_id, user_id);
   const query = {
     where: {
       asset_oss_id: user_id,
@@ -74,7 +76,9 @@ async function getAsset ({ asset_operator_id, user_id, limit }) {
   if (limit) {
     Object.assign(query, { limit });
   }
-  return MazeyAsset.findAll(query).catch(console.error);
+  return MazeyAsset.findAll(query).catch(error => {
+    logger.error({ err: error }, "[asset] asset lookup failed");
+  });
 }
 
 // 删除记录

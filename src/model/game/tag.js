@@ -39,7 +39,6 @@ const MazeyTag = sqlIns.define(
 // 增加标签
 async function mAddNewTags ({ user_id, user_name, tag_name, tag_status }) {
   // 创建前先看标签是否存在
-  console.log("tag_name", tag_name);
   const tags = await Promise.all(
     tag_name.map(name => {
       return MazeyTag.findOrCreate({
@@ -55,7 +54,6 @@ async function mAddNewTags ({ user_id, user_name, tag_name, tag_status }) {
   // const ret = await MazeyTag.bulkCreate(param, {
   //   updateOnDuplicate: ['tag_name'],
   // });
-  console.log("tag_status", tag_status);
   if (tag_status === 1 || tag_status === "1") {
     return rsp({ data: tags });
   } else {

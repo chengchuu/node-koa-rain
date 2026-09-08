@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes, Op } = require("sequelize");
 const { rsp } = require("../../entities/response");
@@ -58,7 +59,9 @@ async function addNewScore ({ game_id, game_name, score, start, remark, user_id,
     remark,
     user_id,
     user_name,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[game] rating creation failed");
+  });
   if (ret && ret.dataValues) {
     return rsp({ data: ret.dataValues });
   }
@@ -70,7 +73,9 @@ async function queryAllScore ({ game_id }) {
     where: {
       game_id,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[game] rating lookup failed");
+  });
   return rsp({ data: ret });
 }
 module.exports = {

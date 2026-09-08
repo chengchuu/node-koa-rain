@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes } = require("sequelize");
 
@@ -130,7 +131,9 @@ async function report ({
     encoded_body_size,
   })
     .then(() => "success")
-    .catch(console.error);
+    .catch(error => {
+      logger.error({ err: error }, "[report] report failed");
+    });
 }
 
 module.exports = {

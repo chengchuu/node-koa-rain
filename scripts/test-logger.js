@@ -33,7 +33,7 @@ assert.notStrictEqual(run(source, "invalid").status, 0);
 assert.notStrictEqual(run(source, "").status, 0);
 result = run('logger.info("[test] final record"); process.exit(0);');
 assert.strictEqual(records(result.stdout).length, 1);
-const keys = [ "password", "user_password", "passwordHash", "authorization", "Authorization", "cookie", "Cookie", "token", "accessToken", "access_token", "secret", "key", "accessKeyId", "accessKeySecret", "code", "verificationCode", "email", "phone", "mobile", "address", "address_detail", "address_user", "address_mobile", "card_password", "headers", "body", "config", "request", "response", "ctx", "content", "decoded", "user", "mysqlConf", "url", "webhook" ];
+const keys = [ "password", "user_password", "passwordHash", "authorization", "Authorization", "cookie", "Cookie", "token", "accessToken", "access_token", "secret", "key", "accessKeyId", "accessKeySecret", "code", "verificationCode", "email", "phone", "mobile", "address", "address_detail", "address_user", "address_mobile", "card_password", "headers", "body", "config", "request", "response", "ctx", "content", "decoded", "user", "mysqlConf", "url", "webhook", "user_email", "user_name", "nick_name", "real_name", "user_id", "asset_operator_id", "oss_user_id", "card_number", "address_date", "envConfig", "$mysql_password", "$mysql_username", "$email_key", "$email_name", "secretKey", "jwtToken" ];
 keys.forEach(key => {
   const value = {};
   value[key] = "SENSITIVE_MARKER";
@@ -63,6 +63,7 @@ assert(!result.stderr.includes("SENSITIVE_MARKER"));
 const failure = records(result.stderr)[0].err;
 assert.strictEqual(failure.type, "AxiosError");
 assert.strictEqual(failure.status, 503);
+assert.strictEqual(failure.errorCode, "ECONNRESET");
 assert.strictEqual(failure.stack, "src/app.js:1:2");
 assert.strictEqual(failure.message, undefined);
 console.log("Logger output, levels, redaction, and rejection checks passed.");

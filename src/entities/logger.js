@@ -19,7 +19,7 @@ function serializeError(error) {
   const safe = { type: "Error" };
   if (!error || typeof error !== "object") return safe;
   if (errorTypes.has(error.name)) safe.type = error.name;
-  if (errorCodes.has(error.code)) safe.code = error.code;
+  if (errorCodes.has(error.code)) safe.errorCode = error.code;
   if (Number.isInteger(error.status) && error.status >= 100 && error.status <= 599) safe.status = error.status;
   if (typeof error.stack === "string") {
     const frames = error.stack.split("\n").slice(1).reduce((result, line) => {
@@ -43,6 +43,7 @@ const sensitiveKeys = [
   "code", "verificationCode", "email", "phone", "mobile", "address", "address_detail", "address_user",
   "address_mobile", "card_password", "headers", "body", "config", "request", "response", "ctx",
   "content", "decoded", "user", "mysqlConf", "url", "webhook",
+  "user_email", "user_name", "nick_name", "real_name", "user_id", "asset_operator_id", "oss_user_id", "card_number", "address_date", "envConfig", "$mysql_password", "$mysql_username", "$email_key", "$email_name", "secretKey", "jwtToken",
 ];
 const redact = sensitiveKeys.reduce((paths, key) => paths.concat(key, "*." + key), []);
 redact.push("req.headers.authorization", "req.headers.cookie", "request.headers.authorization", "request.headers.cookie");

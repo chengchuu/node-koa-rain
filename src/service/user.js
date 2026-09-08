@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 // 用户
 const { err } = require("../entities/err");
 const { rsp } = require("../entities/response");
@@ -46,7 +47,9 @@ async function sGetUserInfo(ctx) {
           Authorization: "APPCODE #rabbit",
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[user] user information lookup failed");
+      });
   } catch (error) {
     return err({ message: "saip error" });
   }
@@ -80,7 +83,9 @@ async function sGetUserInfo(ctx) {
         .then(function(data) {
           return data;
         })
-        .catch(console.error));
+        .catch(error => {
+          logger.error({ err: error }, "[user] user information lookup failed");
+        }));
     } catch (error) {
       return err({ message: "getWeatherDaily error" });
     }
@@ -102,7 +107,6 @@ async function sAddNewUser(ctx, nick_name, real_name = "", user_password = "", u
       .required()
       .error(errors => {
         for (let valErr of errors) {
-          console.log(valErr.code);
           switch (valErr.code) {
             case "string.max":
               return new Error("用户名长度不能超过20");
@@ -174,7 +178,6 @@ async function sGetIP(ctx) {
 
 // 登录
 async function sLogin({ ctx, user_name, user_password }) {
-  console.log("_ ctx:", ctx);
   if (!user_name) {
     return err({ message: "请输入用户名" });
   }

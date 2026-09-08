@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 // Read
 const { err } = require("../../entities/err");
 const { mAddCard, mGetCards, mUpdateCard, mGetRecentCard, mGetCardIntegral, mToggleLikes, mGetRecentAchievement } = require("../../model/nut/read");
@@ -74,7 +75,9 @@ async function sPunchCard (ctx) {
         });
       }
     })
-    .catch(console.error);
+    .catch(error => {
+      logger.error({ err: error }, "[reading] card notification failed");
+    });
   return mAddCardRes;
 }
 
@@ -126,7 +129,6 @@ async function sGetWikis (ctx) {
 
 // Get all notes.
 async function sGetAllWikis (ctx) {
-  console.log("_ ctx", ctx);
   const mGetWikisRes = await mGetAllWikis();
   if (mGetWikisRes.ret !== 0) {
     return mGetWikisRes;

@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 // 上传
 const fs = require("fs");
 const path = require("path");
@@ -16,7 +17,6 @@ const say = require("../../utils/say");
 // 上传单个文件
 async function upload(ctx) {
   // 对token进行解码
-  console.log("ctx", ctx.state.user);
   const jwtToken = ctx.state.user;
   const file = ctx.request.files.file; // 获取上传文件
   const afferentTarget = (ctx.request.body && ctx.request.body.target) || ctx.query.target || ctx.request.target;
@@ -35,7 +35,7 @@ async function upload(ctx) {
   let lastFileStr = fileStr[0] + "/" + typeStr;
   let fileUrl = afferentTarget ? `${afferentTarget}` : `assets/${lastFileStr}`;
   await mkdir.mkdirs(fileUrl, err => {
-    console.log("mkdirs fileUrl err", err);
+    if (err instanceof Error) logger.error({ err }, "[upload] directory creation failed");
   });
   const target = afferentTarget || "assets";
   let uid = Number(ctx.query.uid) || 0;
@@ -46,7 +46,7 @@ async function upload(ctx) {
         data: { uid = 0 },
       } = await sGetUid(ctx));
     } catch (err) {
-      console.error(err);
+      logger.error({ err: err }, "[upload] upload failed");
     }
   }
   const tFilePath = file ? file.path : "";
@@ -76,7 +76,9 @@ async function upload(ctx) {
   let ok;
   const status = new Promise(resolve => {
     ok = resolve;
-  }, console.error);
+  }, error => {
+    logger.error({ err: error }, "[upload] upload failed");
+  });
   let cdnDomain = process.env.NODE_ENV === "development" ? "https://localhost:3224/" : `${assetsBaseUrl}/`;
   let ossResult = "";
   // 生成入库字段
@@ -117,7 +119,6 @@ async function upload(ctx) {
 // 查询静态资源
 async function getAssets({ ctx, asset_operator_id }) {
   const jwtToken = ctx.state.user || { data: {} };
-  console.log("_ asset_operator_id:", asset_operator_id);
   const limit = Boolean(ctx.query.limit) && Number(ctx.query.limit);
   const assets = await getAsset({ asset_oss_id: Number(ctx.query.oss_id), user_id: jwtToken.data.user_id, limit });
   if (!assets) {
@@ -226,7 +227,7 @@ async function sSynthesize2(ctx, { content }) {
     if (error) {
       return err({ info: error.message });
     } else {
-      console.log("Audio saved successfully!");
+      logger.info("[upload] speech file stored");
       return rsp({ data: fileName });
     }
   });

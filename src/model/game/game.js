@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes } = require("sequelize");
 const { rsp, rspPage } = require("../../entities/response");
@@ -80,7 +81,9 @@ async function addNewGame ({ game_picture, game_type, game_name, game_english_na
       game_release_time,
       user_id,
       user_name,
-    }).catch(console.error);
+    }).catch(error => {
+      logger.error({ err: error }, "[game] game creation failed");
+    });
     if (ret && ret.dataValues) {
       return rsp({ data: ret.dataValues });
     }
@@ -106,7 +109,9 @@ async function queryUpdateGame ({ game_id }) {
       },
     ],
     through: { attributes: [] },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[game] game lookup failed");
+  });
   if (!ret) {
     return err({ message: "该游戏不存在" });
   }
@@ -116,7 +121,6 @@ async function mUpdateGame ({ data }, score) {
   const scoreData = score.data;
   let game_score_personnel = data.game_score_personnel + 1;
   let game_score = (data.game_score * data.game_score_personnel + scoreData.score) / game_score_personnel;
-  console.log("game_score", game_score);
   game_score = game_score.toFixed(2);
   let game_star = 5;
   let game_id = data.game_id;
@@ -131,7 +135,9 @@ async function mUpdateGame ({ data }, score) {
         game_id,
       },
     },
-  ).catch(console.error);
+  ).catch(error => {
+    logger.error({ err: error }, "[game] game update failed");
+  });
   if (!ret) {
     return err({ message: "该游戏不存在" });
   }
@@ -156,8 +162,9 @@ async function queryAllGame ({ currentPage, pageSize }) {
         attributes: [ "dic_name" ],
       },
     ],
-  }).catch(console.error);
-  console.log("ret", ret);
+  }).catch(error => {
+    logger.error({ err: error }, "[game] game listing failed");
+  });
   return rspPage({ data: ret, currentPage, total });
 }
 // 给游戏增加标签
@@ -166,12 +173,13 @@ async function mAddNewGameTags ({ game_id, data }) {
     where: {
       game_id,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[game] tag association failed");
+  });
   if (!ret) {
     return err({ message: "该游戏不存在" });
   }
   let tagIds = data.map(item => item[0].tag_id);
-  console.log("tagIds", tagIds);
   ret.addMazeyTags(tagIds, { through: { unique: true } });
 }
 MazeyGame.belongsToMany(MazeyTag, { through: MazeyGameTag, foreignKey: "game_id", otherKey: "tag_id" });

@@ -15,10 +15,8 @@ const expectedRoutes = [
   "GET /monitor/get/history",
 ];
 
-const originalLog = console.log;
-console.log = () => {};
+process.env.LOG_LEVEL = "error";
 const router = require("../src/router/feperf");
-console.log = originalLog;
 
 const actualRoutes = router.stack
   .filter(layer => layer.path)

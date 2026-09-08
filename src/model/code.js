@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes, Op } = require("sequelize");
 const { rsp } = require("../entities/response");
@@ -47,7 +48,6 @@ const MazeyCode = sqlIns.define(
 MazeyCode.sync();
 // code数据
 async function acquireNewCode ({ user_id, user_name, code_type, user_email, verify_status = 0, code }) {
-  console.log("code", code);
   const amount = await MazeyCode.count({
     where: {
       user_email,
@@ -61,7 +61,9 @@ async function acquireNewCode ({ user_id, user_name, code_type, user_email, veri
       user_email,
       verify_status,
       code,
-    }).catch(console.error);
+    }).catch(error => {
+      logger.error({ err: error }, "[code] verification code creation failed");
+    });
     if (ret && ret.dataValues) {
       return rsp({ data: ret.dataValues });
     }
@@ -84,7 +86,9 @@ async function acquireNotExpireCode ({ user_email, old_code, new_code }) {
       user_email: user_email,
       verify_status: 0,
       code: new_code,
-    }).catch(console.error);
+    }).catch(error => {
+      logger.error({ err: error }, "[code] verification code renewal failed");
+    });
     if (ret && ret.dataValues) {
       return rsp({ data: ret.dataValues });
     }
@@ -98,12 +102,12 @@ async function updateCodeStatus ({ user_email, code }) {
     where: {
       [Op.and]: [ { user_email: user_email }, { code: code }, { verify_status: 0 } ],
     },
-  }).catch(console.error);
-  console.log("cRes", cRes);
+  }).catch(error => {
+    logger.error({ err: error }, "[code] verification status update failed");
+  });
   if (!cRes) {
     return err({ message: "该邮箱已校验完成或未进行注册" });
   }
-  console.log("cRes", cRes);
   // 判断code过期没
   let creat_time = Number(new Date(cRes.dataValues.create_at));
   let now_time = Number(new Date());
@@ -112,14 +116,18 @@ async function updateCodeStatus ({ user_email, code }) {
       .update({
         verify_status: -1,
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[code] verification status update failed");
+      });
     return err({ message: "验证码已过期, 已重新发送验证码", data: { expire: true } });
   } else {
     const ret = await cRes
       .update({
         verify_status: 1,
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[code] verification status update failed");
+      });
   }
   return err();
 }
@@ -129,7 +137,9 @@ async function mIsExistContent ({ user_email }) {
     where: {
       user_email,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[code] content lookup failed");
+  });
   if (!isNumber(cRes)) {
     return err();
   }

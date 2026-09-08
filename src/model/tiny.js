@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes } = require("sequelize");
 
@@ -45,13 +46,17 @@ async function queryOriLink ({ ori_md5 }) {
     where: {
       ori_md5,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[tiny] original link lookup failed");
+  });
   return queryOriLinkRes;
 }
 
 // 保存长链接 / 返回 ID 用于生成短链接
 async function saveOriLink ({ ori_link, ori_md5 }) {
-  return MazeyTiny.create({ ori_link, ori_md5 }).catch(console.error);
+  return MazeyTiny.create({ ori_link, ori_md5 }).catch(error => {
+    logger.error({ err: error }, "[tiny] original link save failed");
+  });
 }
 
 // 保存短链接
@@ -66,7 +71,9 @@ async function saveTinyLink ({ tiny_id, tiny_link, tiny_key }) {
         tiny_id,
       },
     },
-  ).catch(console.error);
+  ).catch(error => {
+    logger.error({ err: error }, "[tiny] short link save failed");
+  });
 }
 
 // 查询短链接映射的长链接
@@ -76,16 +83,19 @@ async function queryTinyLink ({ tiny_key }) {
     where: {
       tiny_key,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[tiny] short link lookup failed");
+  });
 }
 // 更新短链接访问次数
 async function mUpdateTinyLink ({ tiny_key }) {
-  console.log("wozhixinglewa", tiny_key);
   return MazeyTiny.increment("tiny_count", {
     where: {
       tiny_key,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[tiny] visit count update failed");
+  });
 }
 
 module.exports = {

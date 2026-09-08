@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes, Op } = require("sequelize");
 const { rsp } = require("../../entities/response");
@@ -299,7 +300,9 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
     integral,
     achievement,
     read_card_status,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[reading] card creation failed");
+  });
   if (ret && ret.dataValues) {
     let message = "发布成功";
     if (read_card_status === 0) {
@@ -382,7 +385,9 @@ async function mGetCards ({ currentPage = 1, pageSize = 20, startDate, endDate, 
   // if (limit) {
   //   Object.assign(query, { limit })
   // }
-  const { count = undefined, rows = undefined } = (await NutReadCard.findAndCountAll(query).catch(console.error)) || {};
+  const { count = undefined, rows = undefined } = (await NutReadCard.findAndCountAll(query).catch(error => {
+    logger.error({ err: error }, "[reading] card listing failed");
+  })) || {};
   if (!isNumber(count)) {
     return err({ message: "数据错误" });
   }
@@ -454,7 +459,9 @@ async function mGetRecentCard ({ nick_name }) {
       nick_name,
     },
     order: [ [ "read_create_time", "DESC" ] ],
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[reading] recent card lookup failed");
+  });
   if (!recentRow) {
     return err({ message: "查找失败" });
   }
@@ -467,7 +474,9 @@ async function mToggleLikes ({ read_card_id, nick_name }) {
     where: {
       read_card_id,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[reading] like update failed");
+  });
   if (!targetCard) {
     return err({ message: "此记录不存在" });
   }

@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 // 访客
 const axios = require("axios");
 const { clone } = require("lodash");
@@ -27,7 +28,7 @@ async function sAgentGet (ctx) {
       return res.data;
     })
     .catch(err => {
-      console.error("err", err);
+      logger.error({ err: err }, "[visitor] proxy get failed");
     });
 }
 
@@ -46,7 +47,7 @@ async function sAgentPut (ctx) {
       return res.data;
     })
     .catch(err => {
-      console.error("err", err);
+      logger.error({ err: err }, "[visitor] proxy put failed");
     });
 }
 
@@ -68,11 +69,10 @@ async function sAgentAny (ctx) {
     headers,
   })
     .then(res => {
-      console.log("res", res);
       return res.data;
     })
     .catch(err => {
-      console.error("err", err);
+      logger.error({ err: err }, "[visitor] proxy request failed");
     });
 }
 

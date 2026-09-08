@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 // 卡号 密码 状态(0, 1)
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes } = require("sequelize");
@@ -52,7 +53,9 @@ async function mCheckCardByNumber ({ card_number, card_password }) {
       card_password: card_password,
     },
     through: { attributes: [] },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[card] card credential lookup failed");
+  });
   if (!ret) {
     return err({ message: "该卡号不存在或者密码错误" });
   }
@@ -72,7 +75,9 @@ async function mGetCardByNumber ({ card_number }) {
       },
     ],
     through: { attributes: [] },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[card] card lookup failed");
+  });
   if (!ret) {
     return err({ message: "该卡号不存在或者密码错误" });
   }
@@ -88,7 +93,9 @@ async function mUpdateCard ({ address_id, card_number }) {
         card_number,
       },
     },
-  ).catch(console.error);
+  ).catch(error => {
+    logger.error({ err: error }, "[card] card update failed");
+  });
   if (!Array.isArray(ret) || ret[0] === 0) {
     return err({ message: "该卡号不存在" });
   }
@@ -104,7 +111,9 @@ async function mUpdateCardByAddress ({ address_id }) {
         address_id,
       },
     },
-  ).catch(console.error);
+  ).catch(error => {
+    logger.error({ err: error }, "[card] card address update failed");
+  });
   if (!Array.isArray(ret) || ret[0] === 0) {
     return err({ message: "该卡号不存在" });
   }
@@ -128,7 +137,7 @@ async function syncCardModels () {
     await MazeyCard.sync();
   } catch (error) {
     // Do not crash app startup if the optional card schema cannot be auto-created.
-    console.error("[card-model-sync] sync failed:", error.message);
+    logger.error({ err: error }, "[card] schema synchronization failed");
   }
 }
 

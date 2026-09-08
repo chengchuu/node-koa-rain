@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 // 卡号 密码 状态(0, 1)
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes } = require("sequelize");
@@ -61,7 +62,9 @@ async function mGetAddressByNumber({ card_number }) {
       card_number,
     },
     through: { attributes: [] },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[card] address lookup failed");
+  });
   if (!ret) {
     return err({ message: "该卡号没有地址" });
   }
@@ -74,7 +77,9 @@ async function mAddAddressByNumber({ card_number, address_detail, address_user, 
     address_user,
     address_mobile,
     address_date,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[card] address creation failed");
+  });
   if (ret && ret.dataValues) {
     return rsp({ data: ret.dataValues });
   }
@@ -94,7 +99,9 @@ async function mUpdateAddress({ card_number, address_id, address_detail, address
           address_id,
         },
       },
-    ).catch(console.error);
+    ).catch(error => {
+      logger.error({ err: error }, "[card] address update failed");
+    });
     if (!Array.isArray(ret) || ret[0] === 0) {
       return err({ message: "该卡号不存在" });
     }
@@ -112,8 +119,9 @@ async function mUpdateAddress({ card_number, address_id, address_detail, address
           address_id,
         },
       },
-    ).catch(console.error);
-    console.log("ret", ret);
+    ).catch(error => {
+      logger.error({ err: error }, "[card] address update failed");
+    });
     if (Array.isArray(ret) && ret[0] > 0) {
       return rsp({ data: { affectedRows: ret[0] } });
     }

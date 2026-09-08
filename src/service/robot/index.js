@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 // 机器人 通用方法
 const schedule = require("node-schedule");
 const axios = require("axios");
@@ -36,7 +37,9 @@ function sRobotSendColorText({ type = "", message = "", messageFn = undefined, d
           content,
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] colored message delivery failed");
+      });
   };
   if (immediately) {
     return fn();
@@ -207,8 +210,9 @@ function sCommonRobotSend({ target = "workweixin", alias = "", type = "", data =
       default:
         url = "";
     }
-    console.log("sCommonRobotSend url", url);
-    return axios.post(url, postData).catch(console.error);
+    return axios.post(url, postData).catch(error => {
+      logger.error({ err: error }, "[robot] message delivery failed");
+    });
   };
   if (immediately) {
     return fn();

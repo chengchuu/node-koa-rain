@@ -35,7 +35,6 @@ async function sAddNewScore (ctx, { game_id, score, start, remark }) {
     });
     if (addNewScoreRes.data) {
       let mUpdateGameRes = await mUpdateGame(queryGameRes, addNewScoreRes);
-      console.log("mUpdateGameRes", mUpdateGameRes);
     }
     return addNewScoreRes;
   } else {

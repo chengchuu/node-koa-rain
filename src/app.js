@@ -1,3 +1,4 @@
+const logger = require("./entities/logger");
 const Koa = require("koa");
 const Router = require("koa-router");
 const koaBody = require("koa-body");
@@ -15,10 +16,10 @@ const app = new Koa();
 const router = new Router();
 // 创建 temp
 mkdir.mkdirs("temp", err => {
-  console.log("mkdirs temp err", err);
+  if (err instanceof Error) logger.error({ err }, "[app] directory creation failed");
 });
 mkdir.mkdirs("video", err => {
-  console.log("mkdirs video err", err);
+  if (err instanceof Error) logger.error({ err }, "[app] directory creation failed");
 });
 // 请求日志
 app.use(async (ctx, next) => {
@@ -53,8 +54,10 @@ app.use(router.routes()).use(router.allowedMethods());
 startFeperfSchedules();
 // 错误监控
 app.on("error", async (err, ctx) => {
-  console.error("Server Error:", err);
+  logger.error({ err: err }, "[app] request handling failed");
   sReportErrorInfo({ ctx, logType: "server_error", err, url: "", alias: "pigKey" });
 });
 // 监听端口
-app.listen(3224);
+app.listen(3224, () => {
+  logger.info({ port: 3224 }, "[app] server listening");
+});

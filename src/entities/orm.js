@@ -7,6 +7,7 @@ const sqlIns = new Sequelize(mysqlConf.$mysql_database, mysqlConf.$mysql_usernam
   host: mysqlConf.$mysql_server_name,
   dialect: "mysql" /* 选择 'mysql' | 'mariadb' | 'postgres' | 'mssql' 其一 */,
   timezone: "+08:00",
+  logging: false,
   dialectOptions: {
     charset: "utf8",
   },

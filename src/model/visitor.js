@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes } = require("sequelize");
 const { acquireNewUser } = require("./user");
@@ -124,13 +125,14 @@ async function saveIPInfo ({
   return MazeyVisitor.create(createData)
     .then(r => {
       // pass
-      console.log("_ r:", r);
     })
     .catch(e => {
       if (e.message.includes("doesn't exist")) {
         MazeyVisitor.sync()
           .then(() => MazeyVisitor.create(createData))
-          .catch(console.error);
+          .catch(error => {
+            logger.error({ err: error }, "[visitor] visitor information save failed");
+          });
       }
     });
 }

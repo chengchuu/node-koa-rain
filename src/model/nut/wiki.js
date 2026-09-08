@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes } = require("sequelize");
 const { rsp } = require("../../entities/response");
@@ -55,7 +56,9 @@ async function mAddWiki ({ nick_name, book_name, content }) {
     book_name,
     content,
     integral: 30,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[reading] note creation failed");
+  });
   if (ret && ret.dataValues) {
     return rsp({ message: "添加成功", data: ret.dataValues });
   }
@@ -74,7 +77,9 @@ async function mGetWikis ({ nick_name } = {}) {
     },
     order: [ [ "create_at", "DESC" ] ],
   };
-  const ret = await NutReadWiki.findAll(query).catch(console.error);
+  const ret = await NutReadWiki.findAll(query).catch(error => {
+    logger.error({ err: error }, "[reading] note lookup failed");
+  });
   if (ret && Array.isArray(ret)) {
     return rsp({ message: "成功", data: ret });
   }
@@ -89,7 +94,9 @@ async function mGetAllWikis () {
     },
     order: [ [ "create_at", "DESC" ] ],
   };
-  const ret = await NutReadWiki.findAll(query).catch(console.error);
+  const ret = await NutReadWiki.findAll(query).catch(error => {
+    logger.error({ err: error }, "[reading] note listing failed");
+  });
   if (ret && Array.isArray(ret)) {
     return rsp({ message: "成功", data: ret });
   }
@@ -126,7 +133,6 @@ async function mGetWikiIntegral ({ nick_name }) {
           book_name
       ) AS A;
   `);
-  console.log("integralRow", integralRow);
   const [ results ] = integralRow;
   if (results.length && results[0].sumIntegral) {
     return rsp({ message: "查询成功", data: { integral: results[0] } });

@@ -24,7 +24,6 @@ async function sAddLog({ ctx, logType, content, log_type, isEncode = false }) {
       data: { ip },
     } = await sGetIP(ctx));
   }
-  console.log("sAddLog:", { tempType, content, ip, isEncode });
   const AddLogRes = await mAddLog({ log_type: tempType, ip, content });
   if (AddLogRes.ret === 0) {
     if (isEncode) {

@@ -1,3 +1,4 @@
+const logger = require("../logger");
 const jwt = require("jsonwebtoken");
 const { err } = require("../err");
 const { rsp } = require("../response");
@@ -39,7 +40,6 @@ async function authMiddleware(ctx, next) {
   }
   try {
     const decoded = jwtVerify(token);
-    console.log("decoded", decoded);
     if (decoded.code !== 2) {
       ctx.body = err({
         message: "用户登陆过期,请重新登陆",
@@ -49,7 +49,7 @@ async function authMiddleware(ctx, next) {
     ctx.state.user = decoded;
     await next();
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error }, "[auth] request handling failed");
     ctx.throw(500, "Internal server error");
   }
 }

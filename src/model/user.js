@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes, Op } = require("sequelize");
 const { err } = require("../entities/error");
@@ -72,7 +73,9 @@ async function acquireNewUser ({ user_signup_ip, user_signup_city, user_fingerpr
       user_fingerprint,
       user_signup_city,
       user_password,
-    }).catch(console.error);
+    }).catch(error => {
+      logger.error({ err: error }, "[user] user creation failed");
+    });
     if (ret && ret.dataValues) {
       return rsp({ data: ret.dataValues });
     }
@@ -94,7 +97,9 @@ async function getUid ({ user_name, user_email, user_fingerprint }) {
   if (!where) return false;
   return MazeyUser.findOne({
     where,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] user lookup failed");
+  });
 }
 
 // 用户登录
@@ -109,11 +114,12 @@ async function mLogin ({ user_name, user_password }) {
         },
       },
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] login failed");
+  });
   if (!ret) {
     return err({ message: "用户不存在" });
   }
-  console.log("ret", ret);
   const { user_password: realPassword } = ret;
   const {
     data: { token: requestPassword },
@@ -141,7 +147,9 @@ async function mGetUserIdByPassword ({ user_password }) {
         },
       },
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] user lookup failed");
+  });
   if (!ret) {
     return err({ message: "用户不存在" });
   }
@@ -167,7 +175,9 @@ async function mGetUserNameByPassword ({ user_password }) {
         },
       },
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] user lookup failed");
+  });
   if (!ret) {
     return err({ message: "用户不存在" });
   }
