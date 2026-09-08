@@ -40,6 +40,8 @@ Keep changes parseable by Node.js 10. Do not introduce ESM, top-level `await`, o
 - `src/model/`: Sequelize definitions and persistence helpers.
 - `src/entities/orm.js`: shared Sequelize/MySQL connection.
 - `src/entities/logger.js`: shared Pino logger, error serialization, redaction, and severity routing.
+- `scripts/`: focused FEPerf integration checks plus logger, pipe, integration, console-usage, and comment audits.
+- `guides/LOGGING_AND_COMMENTS_MODERNIZATION_PLAN.md`: implementation record for the completed logging and comment migration; the live code and this guide define current behavior.
 - `src/entities/jwt/`: token creation and path-based authentication middleware.
 - `src/entities/response/`: standard `rsp(...)` and `rspPage(...)` response envelopes.
 - `src/entities/error/`: standard `err(...)` error envelopes and error codes.
@@ -115,6 +117,7 @@ Treat client-supplied upload targets as filesystem input and validate them befor
 - `app.context.logContent` is a small process-local duplicate-suppression buffer.
 - App-level errors are passed to `sReportErrorInfo(...)`, which can notify robot integrations.
 - Application telemetry uses the shared logger separately from these database logs and robot messages.
+- Pino redaction applies only to application telemetry. Database log content and robot notification payloads follow separate paths and must not be assumed to be sanitized by the logger.
 
 ### Application Logging And Comments
 
@@ -166,6 +169,8 @@ Do not assume importing a model is side-effect free. Prefer explicit migrations 
 
 The checked-in development config contains placeholders for MySQL, JWT, weather, email, and robot integrations. It does not currently provide the `logistics` object expected by the card logistics service. The config loader does not log configuration values; do not reintroduce configuration dumps.
 
+`src/router/server.js` imports `alias2Key` directly from `src/config/env.development.js` for `/server/robot/send-text`, independently of `NODE_ENV`. Other configuration consumers normally load through `src/config/index.js`; account for this exception before changing production robot configuration.
+
 ## Commands And Tooling
 
 - Select the local runtime: `nvm use node10` (Node `v10.24.1`)
@@ -211,6 +216,7 @@ The webnode Docker image installs Rain and Server, then starts both from one PM2
 - `src/service/chat.js` is experimental: its upstream request and success response handling are not production-ready.
 - Speech export in `src/service/upload/index.js` relies on callback-based, platform-specific `say` backends; the current route can return before the output file exists.
 - The logistics endpoint cannot perform its intended lookup with the checked-in configuration.
+- `/server/robot/send-text` reads its robot alias from the development configuration even when Rain runs with `NODE_ENV=production`.
 - Process-local caches diverge across workers and reset on restart.
 - Import-time schema synchronization makes startup database-dependent and can create production schema side effects.
 - Several routes that read or mutate sensitive data remain public unless explicitly added to the JWT path list.
