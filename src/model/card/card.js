@@ -1,5 +1,5 @@
 const logger = require("../../entities/logger");
-// 卡号 密码 状态(0, 1)
+
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes } = require("sequelize");
 const { rsp } = require("../../entities/response");
@@ -10,7 +10,7 @@ const MazeyCard = sqlIns.define(
   "MazeyCard",
   {
     card_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -23,7 +23,7 @@ const MazeyCard = sqlIns.define(
       type: DataTypes.STRING(50),
     },
     card_type: {
-      // 1激活 2已使用 3已失效
+      // Status: 1 active, 2 used, 3 expired
       type: DataTypes.INTEGER,
     },
     card_status: {
@@ -126,7 +126,7 @@ async function mBatchAddCard (data) {
   }
   return rsp({ data: ret });
 }
-// 两个外键
+// Synchronize referenced tables before the card table.
 MazeyCard.belongsTo(MazeyCrab, { foreignKey: "crab_id" });
 MazeyCard.belongsTo(MazeyAddress, { foreignKey: "address_id" });
 

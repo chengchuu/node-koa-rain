@@ -1,22 +1,14 @@
 const logger = require("../entities/logger");
-// 访客
+
 const axios = require("axios");
 const { clone } = require("lodash");
 const { rsp } = require("../entities/response");
 const { queryVisitors } = require("../model/visitor");
 
-/**
- * @method getLatestVisitors
- * @desc 获取最近的访客信息
- */
 function getLatestVisitors () {
   return queryVisitors();
 }
 
-/**
- * @method sAgentGet
- * @desc 代理 GET 请求
- */
 async function sAgentGet (ctx) {
   const { url, key = "" } = ctx.query;
   if (key) {
@@ -32,10 +24,6 @@ async function sAgentGet (ctx) {
     });
 }
 
-/**
- * @method sAgentPut
- * @desc 代理 PUT 请求
- */
 async function sAgentPut (ctx) {
   const { url, body, key = "" } = ctx.request.body;
   if (key) {
@@ -51,10 +39,6 @@ async function sAgentPut (ctx) {
     });
 }
 
-/**
- * @method sAgentAny
- * @desc 代理任意请求
- */
 async function sAgentAny (ctx) {
   const { url, method, params, data, headers } = ctx.request.body;
   const { mockKey } = params;
@@ -76,10 +60,6 @@ async function sAgentAny (ctx) {
     });
 }
 
-/**
- * @method sShowRequestInfo
- * @desc 查看请求详情
- */
 async function sShowRequestInfo (ctx) {
   const pureReq = clone(ctx.request);
   return rsp({ data: pureReq });

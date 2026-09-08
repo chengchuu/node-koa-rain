@@ -83,7 +83,6 @@ const MazeyReport = sqlIns.define(
 
 MazeyReport.sync();
 
-// 新增上传资源
 async function report ({
   topic,
   os,

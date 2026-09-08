@@ -6,7 +6,7 @@ const MazeyTag = sqlIns.define(
   "MazeyTag",
   {
     tag_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -15,7 +15,7 @@ const MazeyTag = sqlIns.define(
       type: DataTypes.STRING(200),
       unique: true,
     },
-    // 1 通过 2驳回 3待定
+    // Status: 1 approved, 2 rejected, 3 pending
     tag_status: {
       type: DataTypes.INTEGER,
     },
@@ -36,9 +36,9 @@ const MazeyTag = sqlIns.define(
     indexes: [ { fields: [ "tag_name" ] } ],
   },
 );
-// 增加标签
+
 async function mAddNewTags ({ user_id, user_name, tag_name, tag_status }) {
-  // 创建前先看标签是否存在
+
   const tags = await Promise.all(
     tag_name.map(name => {
       return MazeyTag.findOrCreate({
@@ -51,16 +51,15 @@ async function mAddNewTags ({ user_id, user_name, tag_name, tag_status }) {
       });
     }),
   );
-  // const ret = await MazeyTag.bulkCreate(param, {
-  //   updateOnDuplicate: ['tag_name'],
-  // });
+
+
   if (tag_status === 1 || tag_status === "1") {
     return rsp({ data: tags });
   } else {
     return rsp({ data: [] });
   }
 }
-// 查询已有标签
+
 async function mQueryOldTags ({ tag_name }) {
   let tags = await MazeyTag.findAll({
     where: {

@@ -3,7 +3,7 @@ const { rsp } = require("../../entities/response");
 const { addNewGame, queryAllGame, queryUpdateGame } = require("../../model/game/game");
 const axios = require("axios");
 const Joi = require("joi");
-// 增加游戏
+
 async function sAddNewGame (ctx, { game_name, game_english_name, game_type, game_picture, game_content, game_publisher = "", game_release_time = "" }) {
   const schema = Joi.object({
     game_name: Joi.string()
@@ -34,12 +34,12 @@ async function sAddNewGame (ctx, { game_name, game_english_name, game_type, game
   });
   return addNewGameRes;
 }
-// 查询所有游戏
+
 async function sQueryAllGame (ctx, { currentPage, pageSize }) {
   const queryAllGameRes = await queryAllGame({ currentPage, pageSize });
   return queryAllGameRes;
 }
-// 查询单个游戏
+
 async function sQueryGame (ctx, { game_id }) {
   const schema = Joi.object({
     game_id: Joi.string()

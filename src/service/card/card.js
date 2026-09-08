@@ -1,6 +1,5 @@
 const logger = require("../../entities/logger");
-// const fs = require('fs');
-// const path = require('path');
+
 const { rsp } = require("../../entities/response");
 const { err } = require("../../entities/error");
 const ExcelJS = require("exceljs");
@@ -35,19 +34,19 @@ async function sCheckCardAccess({ card_number, card_password }) {
 }
 
 async function sUploadCard(ctx) {
-  const file = ctx.request.files.file; // 获取上传文件
+  const file = ctx.request.files.file;
   const filePath = file.path;
-  // 创建一个新的工作簿对象
+
   const workbook = new ExcelJS.Workbook();
-  // 读取Excel文件
+
   await workbook.xlsx.readFile(filePath);
-  // 获取第一个工作表
+
   const worksheet = workbook.worksheets[0];
-  // 存储数据的数组
+
   const data = [];
-  // 遍历行
+
   worksheet.eachRow((row, rowNumber) => {
-    // 获取每一行的单元格数据
+
     if (rowNumber !== 1) {
       data.push({
         card_number: row.getCell(1).value,
@@ -56,24 +55,24 @@ async function sUploadCard(ctx) {
       });
     }
   });
-  // 批量导入数据
+
   const mBatchAddCardRes = await mBatchAddCard(data);
   return mBatchAddCardRes;
 }
 async function sBatchAddCrab(ctx) {
-  const file = ctx.request.files.file; // 获取上传文件
+  const file = ctx.request.files.file;
   const filePath = file.path;
-  // 创建一个新的工作簿对象
+
   const workbook = new ExcelJS.Workbook();
-  // 读取Excel文件
+
   await workbook.xlsx.readFile(filePath);
-  // 获取第一个工作表
+
   const worksheet = workbook.worksheets[0];
-  // 存储数据的数组
+
   const data = [];
-  // 遍历行
+
   worksheet.eachRow((row, rowNumber) => {
-    // 获取每一行的单元格数据
+
     if (rowNumber !== 1) {
       data.push({
         crab_specification: row.getCell(1).value,
@@ -82,7 +81,7 @@ async function sBatchAddCrab(ctx) {
       });
     }
   });
-  // 批量导入数据
+
   const mBatchAddCrabRes = await mBatchAddCrab(data);
   return mBatchAddCrabRes;
 }
@@ -177,7 +176,7 @@ async function sAddAddressByNumber({ card_number, card_password, address_id, add
   return err({ message: "失败" });
 }
 async function sUpdateCardByAddressNumber({ address_id, address_category, address_number }) {
-  // 填入单号的同时修改卡为已使用
+  // Mark the card as used when recording its tracking number.
   const UpdateAddressRes = await mUpdateAddress({ address_id, address_category, address_number });
   if (UpdateAddressRes.ret !== 0) {
     return UpdateAddressRes;
@@ -190,13 +189,13 @@ async function sGetAddressByNumber({ card_number, card_password }) {
   if (CheckCardAccessRes.ret !== 0) {
     return CheckCardAccessRes;
   }
-  // 根据卡号获取
+
   const mGetAddressByNumberRes = await mGetAddressByNumber({ card_number });
   return mGetAddressByNumberRes;
 }
 
 async function sGetAddressInfo({ order_number }) {
-  // 需要根据卡号查一下快递单号吗?
+
   if (!logistics || !logistics.partnerID || !logistics.sandboxCode) {
     return err({ message: "缺少物流配置" });
   }
@@ -210,9 +209,7 @@ async function sGetAddressInfo({ order_number }) {
   const generatedUuid = uuid.v4();
   let msgData = { trackingType: "1", trackingNumber: [ order_number ], methodType: "1" };
   msgData = JSON.stringify(msgData);
-  // let codeString = msgData + timestamp + logistics.sandboxCode;
-  // let encodedStr = encodeURIComponent(codeString);
-  // const encodedBaseStr = Buffer.from(md5(encodedStr)).toString('base64');
+
   let params = {
     partnerID: logistics.partnerID,
     requestID: generatedUuid,
@@ -222,8 +219,7 @@ async function sGetAddressInfo({ order_number }) {
     accessToken: "",
   };
   try {
-    // 正式https://bspgw.sf-express.com/std/service
-    // 沙箱https://sfapi-sbox.sf-express.com/std/service
+
     let accessTokenRes = await axios.post("https://sfapi-sbox.sf-express.com/oauth2/accessToken", encodeToken, {
       headers: {
         "Content-type": "application/x-www-form-urlencoded;charset=UTF-8",

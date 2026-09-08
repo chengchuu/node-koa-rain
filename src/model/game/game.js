@@ -10,7 +10,7 @@ const MazeyGame = sqlIns.define(
   "MazeyGame",
   {
     game_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -22,7 +22,7 @@ const MazeyGame = sqlIns.define(
       type: DataTypes.FLOAT,
     },
     game_type: {
-      // 游戏的类型
+      // Game type
       type: DataTypes.STRING(50),
     },
     game_name: {
@@ -32,7 +32,7 @@ const MazeyGame = sqlIns.define(
       type: DataTypes.STRING(50),
     },
     game_content: {
-      // 游戏内容
+      // Game content
       type: DataTypes.STRING(500),
     },
     game_score: {
@@ -41,15 +41,15 @@ const MazeyGame = sqlIns.define(
     game_score_personnel: {
       type: DataTypes.INTEGER,
     },
-    // 发行商
+    // Publisher
     game_publisher: {
       type: DataTypes.STRING(50),
     },
-    // 发版时间
+    // Release date
     game_release_time: {
       type: DataTypes.STRING(50),
     },
-    // 操作人
+    // Operator
     user_id: {
       type: DataTypes.INTEGER,
     },
@@ -63,7 +63,7 @@ const MazeyGame = sqlIns.define(
     updatedAt: "update_at",
   },
 );
-// 增加一个游戏
+
 async function addNewGame ({ game_picture, game_type, game_name, game_english_name, game_content, game_publisher = "", game_release_time = "", user_id, user_name }) {
   const amount = await MazeyGame.count({
     where: {
@@ -91,8 +91,7 @@ async function addNewGame ({ game_picture, game_type, game_name, game_english_na
   }
   return rsp({ message: `${game_name}游戏已存在` });
 }
-// 导入游戏
-// 获取游戏信息并且更新
+
 async function queryUpdateGame ({ game_id }) {
   const ret = await MazeyGame.findOne({
     where: {
@@ -143,7 +142,7 @@ async function mUpdateGame ({ data }, score) {
   }
   return rsp({ data: ret.dataValues });
 }
-// 查询所有游戏进行分页
+
 async function queryAllGame ({ currentPage, pageSize }) {
   const pageIndex = currentPage || 0;
   const pageNo = pageSize || 10;
@@ -167,7 +166,7 @@ async function queryAllGame ({ currentPage, pageSize }) {
   });
   return rspPage({ data: ret, currentPage, total });
 }
-// 给游戏增加标签
+
 async function mAddNewGameTags ({ game_id, data }) {
   const ret = await MazeyGame.findOne({
     where: {

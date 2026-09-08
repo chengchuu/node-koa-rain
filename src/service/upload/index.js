@@ -1,11 +1,11 @@
 const logger = require("../../entities/logger");
-// 上传
+
 const fs = require("fs");
 const path = require("path");
 const { rsp, ossRsp } = require("../../entities/response");
 const { newAsset, getAsset, removeAsset } = require("../../model/asset");
 const { mGetOSSConfs, mNewOSSConf, mNewGetOSSConfs, mAddOSSConf } = require("../../model/oss");
-// const { ossPut, ossMultipartUpload } = require('./alioss');
+
 const { sGetUid } = require("../user");
 const { err } = require("../../entities/err");
 const { isNumber } = require("mazey");
@@ -14,11 +14,11 @@ const mkdir = require("../../utils/mkdir");
 const { assetsBaseUrl } = require("../../config/index");
 const GTTS = require("gtts");
 const say = require("../../utils/say");
-// 上传单个文件
+
 async function upload(ctx) {
-  // 对token进行解码
+  // Use the user payload already decoded by authentication middleware.
   const jwtToken = ctx.state.user;
-  const file = ctx.request.files.file; // 获取上传文件
+  const file = ctx.request.files.file;
   const afferentTarget = (ctx.request.body && ctx.request.body.target) || ctx.query.target || ctx.request.target;
   if (!file.type) {
     return rsp({
@@ -39,7 +39,7 @@ async function upload(ctx) {
   });
   const target = afferentTarget || "assets";
   let uid = Number(ctx.query.uid) || 0;
-  // 通过指纹拿到 uid
+  // Fall back to fingerprint-based user lookup.
   if (!uid) {
     try {
       ({
@@ -50,13 +50,13 @@ async function upload(ctx) {
     }
   }
   const tFilePath = file ? file.path : "";
-  // 创建可读流
+
   const reader = fs.createReadStream(tFilePath);
   const { size: fileSize, type: fileType } = file;
   let fileName = file.name || "upload";
   let pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\]<>《》/?~!@#￥……&*()——|{}【】‘;:”“'。,、? ]");
   if (pattern.test(fileName)) {
-    // 有特殊字符或者汉字就去掉
+
     let rs = "";
     for (let i = 0; i < fileName.length; i++) {
       rs += fileName.substr(i, 1).replace(pattern, "");
@@ -65,14 +65,14 @@ async function upload(ctx) {
   }
   fileName = fileName.replace(/[\u4e00-\u9fa5]/g, a => {
     return "i";
-  }); // 判断有汉字就进行unique
+  }); // Replace each CJK character with i before adding the generated filename suffix.
   let fileArray = fileName.split(".");
   fileName = fileArray[0] + "-" + format(Date.now(), "yyyyMMdd") + "-" + Math.round(Math.random() * 1e9) + "." + fileArray[fileArray.length - 1];
   let downloadFileUrl = afferentTarget ? `../../../../${afferentTarget}` : `../../../../assets/${lastFileStr}/`;
   const filePath = path.join(__dirname, downloadFileUrl) + `${fileName}`;
-  // 创建可写流
+
   const upStream = fs.createWriteStream(filePath);
-  // 控制流文件状态
+  // This promise represents the prepared response, not stream completion.
   let ok;
   const status = new Promise(resolve => {
     ok = resolve;
@@ -81,10 +81,10 @@ async function upload(ctx) {
   });
   let cdnDomain = process.env.NODE_ENV === "development" ? "https://localhost:3224/" : `${assetsBaseUrl}/`;
   let ossResult = "";
-  // 生成入库字段
-  const assetLink = ""; // `https://mazey.cn/assets/${fileName}`;
+
+  const assetLink = "";
   const showLink = `${cdnDomain}${target}/${lastFileStr}/${fileName}`;
-  // 入库
+
   await newAsset({
     asset_oss_id: 0,
     asset_link: assetLink,
@@ -100,7 +100,7 @@ async function upload(ctx) {
   ok(
     rsp({
       data: ossRsp({
-        // assetLink,
+
         ossLink: ossResult,
         showLink,
         target,
@@ -111,12 +111,11 @@ async function upload(ctx) {
       }),
     }),
   );
-  // 可读流通过管道写入可写流
+
   reader.pipe(upStream);
   return status;
 }
 
-// 查询静态资源
 async function getAssets({ ctx, asset_operator_id }) {
   const jwtToken = ctx.state.user || { data: {} };
   const limit = Boolean(ctx.query.limit) && Number(ctx.query.limit);
@@ -128,7 +127,6 @@ async function getAssets({ ctx, asset_operator_id }) {
   return rsp({ data: { assets: ret } });
 }
 
-// 删除记录
 async function sRemoveAsset(ctx) {
   const { asset_id } = ctx.request.body;
   const removeAssetResult = await removeAsset({ asset_id });
@@ -141,10 +139,9 @@ async function sRemoveAsset(ctx) {
   return ret;
 }
 
-// 查询 oss 列表
 async function sGetOSSConfs(ctx) {
   const uidRes = await sGetUid(ctx);
-  // if (uidRes.ret !== 0) return uidRes;
+
   const {
     data: { uid },
   } = uidRes;
@@ -153,7 +150,6 @@ async function sGetOSSConfs(ctx) {
   return rsp({ data: { ossConfs } });
 }
 
-// [新]查询 oss 列表
 async function sNewGetOSSConfs({ token }) {
   if (!token) {
     return err({ message: "缺少 Token" });
@@ -172,7 +168,6 @@ async function sNewGetOSSConfs({ token }) {
   return rsp({ data: { ossConfs } });
 }
 
-// 创建新 oss 配置
 async function sNewOSSConf(ctx) {
   const uidRes = await sGetUid(ctx);
   const {
@@ -185,7 +180,6 @@ async function sNewOSSConf(ctx) {
   return rsp();
 }
 
-// [新]创建新 oss 配置
 async function sAddOSSConf({ ossName, region, accessKeyId, accessKeySecret, bucket, cdnDomain, userName }) {
   if (!ossName) {
     return err({ message: "缺少名字" });
@@ -209,7 +203,7 @@ async function sSynthesize(ctx, { content }) {
   let cdnDomain = process.env.NODE_ENV === "development" ? "https://localhost:3224/" : `${assetsBaseUrl}/`;
   const target = ctx.query.target || "video";
   const showLink = `${cdnDomain}${target}/${fileName}`;
-  // say.setEngine('say-mp3', 'com.apple.speech.synthesis.voice.ting-ting');
+
   try {
     say.export(content, "Microsoft Huihui Desktop", 1, filePath);
     return rsp({ data: showLink });
@@ -218,7 +212,7 @@ async function sSynthesize(ctx, { content }) {
   }
 }
 async function sSynthesize2(ctx, { content }) {
-  // 公司电脑连接不上
+
   const radioFolderPath = "../../../../radio/";
   const fileName = `${Date.now()}.mp3`;
   const filePath = path.join(__dirname, radioFolderPath) + `${fileName}`;

@@ -1,5 +1,5 @@
 const logger = require("../entities/logger");
-// ip服务
+
 const axios = require("axios");
 const { saveIPInfo } = require("../model/visitor");
 const WeatherApi = require("./weather/weather");
@@ -13,7 +13,7 @@ async function getCityInfo ({ ip, referrermz, hrefmz, titlemz, visitor_fingerpri
   try {
     ipResult = await axios.get("http://saip.market.alicloudapi.com/ip", {
       params: {
-        ip, // '114.88.250.156'
+        ip,
       },
       headers: {
         Authorization: "APPCODE #rabbit",
@@ -30,7 +30,7 @@ async function getCityInfo ({ ip, referrermz, hrefmz, titlemz, visitor_fingerpri
     showapi_res_body = ret.showapi_res_body || {};
   }
   const { isp = "", region = "", lnt = "", county = "1", en_name_short = "", lat = "", city = "", city_code = "", country = "", continents = "", en_name = "", ret_code } = showapi_res_body;
-  // 城市
+
   const location = county || city || region;
   let daily = [];
   if (ret) {
@@ -48,7 +48,7 @@ async function getCityInfo ({ ip, referrermz, hrefmz, titlemz, visitor_fingerpri
   const dailyItems = daily.filter(v => v.date === dailyDate);
   const thatDailyW = (dailyItems.length && dailyItems[0]) || {};
   const { text_day: visitor_day_weather, high: visitor_temperature_high, low: visitor_temperature_low } = thatDailyW;
-  // 存储访客 IP 信息
+
   saveIPInfo({
     $visitorIP: ip,
     $continent: continents,
@@ -71,15 +71,15 @@ async function getCityInfo ({ ip, referrermz, hrefmz, titlemz, visitor_fingerpri
 }
 
 /**
- * @method getClientIP
- * @desc 获取用户 ip 地址
- * @param {Object} req - 请求
+ * @description Read the forwarded address before falling back to connection addresses.
+ * @param {object} req - Request with headers and connection details.
+ * @returns {string} Forwarded header or connection address.
  */
 function getClientIP (req) {
   return (
-    req.headers["x-forwarded-for"] || // 判断是否有反向代理 IP
-    req.connection.remoteAddress || // 判断 connection 的远程 IP
-    req.socket.remoteAddress || // 判断后端的 socket 的 IP
+    req.headers["x-forwarded-for"] || // Prefer the forwarded address when a reverse proxy supplies it.
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
     req.connection.socket.remoteAddress
   );
 }

@@ -15,59 +15,59 @@ const NutReadCard = sqlIns.define(
       autoIncrement: true,
     },
     nick_name: {
-      // 花名
+      // Nickname
       type: DataTypes.STRING(20),
     },
     real_name: {
-      // 姓名
+      // Name
       type: DataTypes.STRING(20),
     },
     book_name: {
-      // 书名
+      // Book title
       type: DataTypes.STRING(100),
     },
     content: {
-      // 内容
+      // Content
       type: DataTypes.STRING(500),
     },
     imgsStr: {
-      // 图片 url,url,url
+      // Comma-separated image URLs
       type: DataTypes.STRING(1000),
     },
     read_card_type: {
-      // 参与方式 person 个人 team 团队
+      // Participation: person for individuals, team for groups
       type: DataTypes.STRING(20),
     },
     read_card_date: {
-      // 2021-05-26
+
       type: DataTypes.STRING(20),
     },
     read_card_status: {
-      // 状态 1 正常 0 过期
+      // Status: 1 active, 0 expired
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
     accumulative_count: {
-      // 累计分享次数 accumulativeCount
+      // Total share count
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
     max_continuous_count: {
-      // 连续分享天数 maxContinuousCount
+      // Consecutive sharing days
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
     integral: {
-      // 每日积分
+      // Daily points
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
     achievement: {
-      // 成就
+      // Achievements
       type: DataTypes.STRING(20),
     },
     likes: {
-      // 赞、喜欢
+      // Likes
       type: DataTypes.STRING(500),
     },
   },
@@ -80,16 +80,15 @@ const NutReadCard = sqlIns.define(
 
 NutReadCard.sync();
 
-// 新增
 async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, read_card_type = "person", read_card_date, read_card_status = 0, status_0_tip = "" } = {}) {
-  // 图片处理
+
   let imgsStr = "";
   if (Array.isArray(imgs) && imgs.length) {
     imgsStr = imgs.join(",");
   }
-  // if 空白内容验证
+  // Allow only one empty submission per book and date.
   if (!content && !imgsStr) {
-    // today
+
     const isBlankCountToday = await NutReadCard.count({
       where: {
         nick_name,
@@ -101,7 +100,7 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
       return err({ message: "空内容一天只能提交一次，写下读后感或者上传图片后再提交吧！" });
     }
   }
-  // if 凌晨分享 00 - 06
+  // Between midnight and 06:00 inclusive, fill a missing previous-day entry.
   const d = new Date();
   const year = d.getFullYear();
   const month = d.getMonth() + 1;
@@ -109,7 +108,7 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
   const d00 = new Date(`${year}-${month}-${day} 00:00:00`);
   const d06 = new Date(`${year}-${month}-${day} 06:00:00`);
   const n = new Date();
-  // 昨天 yesterday
+
   const tomorrowDate = format(subDays(new Date(read_card_date), 1), "yyyy-MM-dd");
   const theDayBeforeYesterday = format(subDays(new Date(read_card_date), 2), "yyyy-MM-dd");
   const isWeeHours = n >= d00 && n <= d06;
@@ -125,9 +124,9 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
       read_card_date = tomorrowDate;
     }
   }
-  // must 统计累计分享
+
   let [ accumulativeCount, maxContinuousCount ] = [ 1, 1 ];
-  // 获取上一次分享
+
   const lastRow = await NutReadCard.findOne({
     where: {
       nick_name,
@@ -136,17 +135,17 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
   });
   if (lastRow) {
     const { accumulative_count, max_continuous_count, read_card_date: lastRowReadCardDate } = lastRow;
-    // 累计分享 + 1
+
     if (isNumber(accumulative_count) && isNumber(max_continuous_count) && lastRowReadCardDate) {
       accumulativeCount = accumulative_count + 1;
-      // if 白天 0 - 24 上一条分享正好是昨日数据 + 1
+      // Extend the streak when the previous entry is from the preceding day.
       if (lastRowReadCardDate === tomorrowDate) {
         maxContinuousCount = max_continuous_count + 1;
       } else if (lastRowReadCardDate === read_card_date) {
-        // 上一条分享是今日数据 =
+        // Multiple entries for the same date do not extend the streak.
         maxContinuousCount = max_continuous_count;
       }
-      // if 凌晨 0 - 6 and 补白天分享
+      // A backfilled entry can continue a streak from two days earlier.
       if (isWeeHours && isshareCountTomorrow === 0) {
         if (lastRowReadCardDate === theDayBeforeYesterday) {
           maxContinuousCount = max_continuous_count + 1;
@@ -154,16 +153,15 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
       }
     }
   }
-  // 计算积分
+
   let integral = 0;
   if (!content && !imgsStr) {
     integral = 5;
   } else if (content || imgsStr) {
     integral = 15;
   }
-  // 计算成就 achievement maxContinuousCount
-  // 修仙段位 https://zhuanlan.zhihu.com/p/374401281
-  // 炼皮，炼肉，炼骨，炼脏，炼血，后天，先天，辟谷，引气，聚气，凝气，化气，炼气，聚元，凝元，筑元，旋照，筑基，灵动，灵虚，灵寂，开光，融合，心动，聚丹，凝丹，韵丹，结丹，金丹，聚婴凝婴结婴，元婴，婴变，出窍，元神，分神，化神，炼虛，洞虚，化虚，返虚，合体，合灵，合魂，空冥，寂灭，问鼎，闻道，大乘，渡劫，化羽，飞升，散仙，游仙人仙，地仙，天仙，真仙，玄仙，太乙玄仙，九天玄仙，大罗玄仙，金仙，太乙金仙，大罗金仙，罗天上仙，仙君，仙王，仙尊，仙帝，仙神，神人，地神，天神，真神，星神，玄神，神君，神王，神帝，神尊，准圣，圣人，天圣，圣君，圣王，圣帝，圣尊，天道，至尊，混沌，混沌神君，混沌神王，混沌神帝，混沌神尊，大道，道，虚无本源
+  // Award achievements at consecutive-day milestones.
+
   let achievement = "";
   switch (maxContinuousCount) {
     case 3:
@@ -272,7 +270,7 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
       achievement = "玄神";
       break;
     default:
-    // 傲骨寒梅 养精蓄锐 追光者 浴火重生 初心
+
       achievement = "";
   }
   if (achievement) {
@@ -286,7 +284,7 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
       achievement = "";
     }
   }
-  // 新增数据
+
   const ret = await NutReadCard.create({
     nick_name,
     real_name,
@@ -313,7 +311,6 @@ async function mAddCard ({ nick_name, real_name = "", book_name, content, imgs, 
   return err({ message: "发布失败" });
 }
 
-// 查询最近的成就
 async function mGetRecentAchievement ({ nick_name }) {
   const lastAchRow = await NutReadCard.findOne({
     where: {
@@ -337,7 +334,6 @@ async function mGetRecentAchievement ({ nick_name }) {
   return err({ message: "成就不合法" });
 }
 
-// 计算积分
 async function mGetCardIntegral ({ nick_name }) {
   const integralRow = await sqlIns.query(`
     SELECT
@@ -365,7 +361,6 @@ async function mGetCardIntegral ({ nick_name }) {
   return err({ message: "查询失败" });
 }
 
-// 查询
 async function mGetCards ({ currentPage = 1, pageSize = 20, startDate, endDate, simple = "close", isPrivacy = false } = {}) {
   const where = { read_card_status: 1 };
   if (startDate && endDate) {
@@ -382,9 +377,7 @@ async function mGetCards ({ currentPage = 1, pageSize = 20, startDate, endDate, 
     offset: (currentPage - 1) * pageSize,
     limit: pageSize,
   };
-  // if (limit) {
-  //   Object.assign(query, { limit })
-  // }
+
   const { count = undefined, rows = undefined } = (await NutReadCard.findAndCountAll(query).catch(error => {
     logger.error({ err: error }, "[reading] card listing failed");
   })) || {};
@@ -403,7 +396,7 @@ async function mGetCards ({ currentPage = 1, pageSize = 20, startDate, endDate, 
         }
       }
       Object.assign(dataValues, { imgs, imgsStr: undefined });
-      // 简化内容
+
       if (simple === "open") {
         if (dataValues.content && dataValues.content.length) {
           Object.assign(dataValues, { content: "#exist" });
@@ -414,7 +407,7 @@ async function mGetCards ({ currentPage = 1, pageSize = 20, startDate, endDate, 
           Object.assign(dataValues, { imgs, imgsLen });
         }
       }
-      // 隐藏真实姓名
+      // Hide real names in the returned records.
       if (isPrivacy) {
         if (dataValues.real_name) {
           Object.assign(dataValues, { real_name: "#exist" });
@@ -435,7 +428,6 @@ async function mGetCards ({ currentPage = 1, pageSize = 20, startDate, endDate, 
   return err({ message: "失败" });
 }
 
-// 更新分享数据
 async function mUpdateCard ({ read_card_id, accumulative_count, max_continuous_count }) {
   const updateRow = await NutReadCard.update(
     { accumulative_count, max_continuous_count },
@@ -452,7 +444,6 @@ async function mUpdateCard ({ read_card_id, accumulative_count, max_continuous_c
   return rsp({ message: "更新成功", data: { row } });
 }
 
-// 查看最近的提交
 async function mGetRecentCard ({ nick_name }) {
   const recentRow = await NutReadCard.findOne({
     where: {
@@ -468,7 +459,6 @@ async function mGetRecentCard ({ nick_name }) {
   return rsp({ message: "查找成功", data: { card: recentRow } });
 }
 
-// 添加或取消赞
 async function mToggleLikes ({ read_card_id, nick_name }) {
   const targetCard = await NutReadCard.findOne({
     where: {

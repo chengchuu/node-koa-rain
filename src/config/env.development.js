@@ -8,7 +8,7 @@ const mysqlConf = {
   $mysql_password,
   $mysql_database,
 };
-const pswSecret = "#rabbit"; // 密码加密密钥
+const pswSecret = "#rabbit"; // Password encryption key
 const UID = "#rabbit"; // User ID
 const KEY = "#rabbit"; // Key
 const WeatherConf = {
@@ -17,11 +17,11 @@ const WeatherConf = {
 };
 const $email_name = "#rabbit"; // Server
 const $email_key = "#rabbit"; // User
-// Alias key集合
+// Robot key aliases
 const alias2Key = new Map([
-  // 小兔子 Rabbit Daily
+  // Rabbit Daily
   [ "rabbitKey", "#rabbit" ],
-  // 小橘子 Orange Error 错误监控
+  // Orange Error monitoring
   [ "orangeKey", "#rabbit" ],
   [ "pigKey", "#rabbit" ],
   [ "sendOutKey", "#rabbit" ],

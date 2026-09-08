@@ -1,4 +1,3 @@
-// 卡号 密码 状态(0, 1)
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes } = require("sequelize");
 const { rsp } = require("../../entities/response");
@@ -7,7 +6,7 @@ const MazeyCrab = sqlIns.define(
   "MazeyCrab",
   {
     crab_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -15,14 +14,14 @@ const MazeyCrab = sqlIns.define(
     crab_amount: {
       type: DataTypes.INTEGER,
     },
-    // 规格
+    // Specification
     crab_specification: {
       type: DataTypes.STRING(100),
     },
     crab_weight: {
       type: DataTypes.INTEGER,
     },
-    // 具体的描述
+    // Description
     crab_content: {
       type: DataTypes.STRING(500),
     },

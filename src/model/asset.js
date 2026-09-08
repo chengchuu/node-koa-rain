@@ -41,7 +41,7 @@ const MazeyAsset = sqlIns.define(
       type: DataTypes.INTEGER,
     },
     asset_status: {
-      // 状态 1 正常 0 删除
+      // Status: 1 active, 0 deleted
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
@@ -55,7 +55,6 @@ const MazeyAsset = sqlIns.define(
 
 MazeyAsset.sync();
 
-// 新增上传资源
 async function newAsset ({ asset_link, asset_oss_id, asset_file_name, asset_show_link, asset_oss_link, asset_target, asset_type, asset_size, asset_operator_id, user_id }) {
   return MazeyAsset.create({ asset_link, asset_oss_id: user_id || asset_oss_id, asset_file_name, asset_show_link, asset_oss_link, asset_target, asset_type, asset_size, asset_operator_id }).catch(
     error => {
@@ -64,7 +63,6 @@ async function newAsset ({ asset_link, asset_oss_id, asset_file_name, asset_show
   );
 }
 
-// 查询静态资源
 async function getAsset ({ asset_operator_id, user_id, limit }) {
   const query = {
     where: {
@@ -81,7 +79,6 @@ async function getAsset ({ asset_operator_id, user_id, limit }) {
   });
 }
 
-// 删除记录
 async function removeAsset ({ asset_id }) {
   return MazeyAsset.update(
     { asset_status: 0 },

@@ -4,7 +4,7 @@ const { DataTypes } = require("sequelize");
 const { rsp } = require("../../entities/response");
 const { err } = require("../../entities/error");
 
-// 读书笔记
+// Reading notes
 const NutReadWiki = sqlIns.define(
   "NutReadWiki",
   {
@@ -14,28 +14,28 @@ const NutReadWiki = sqlIns.define(
       autoIncrement: true,
     },
     nick_name: {
-      // 花名
+      // Nickname
       type: DataTypes.STRING(100),
     },
     book_name: {
-      // 书名
+      // Book title
       type: DataTypes.STRING(100),
     },
     content: {
-      // 内容，前期是 WIKI 链接
+      // Note content; originally a wiki URL
       type: DataTypes.STRING(500),
     },
     read_wiki_month: {
-      // 05 06 07
+
       type: DataTypes.STRING(20),
     },
     read_wiki_status: {
-      // 状态 1 正常 0 过期
+      // Status: 1 active, 0 expired
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
     integral: {
-      // 每日积分
+      // Daily points
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
@@ -49,7 +49,6 @@ const NutReadWiki = sqlIns.define(
 
 NutReadWiki.sync();
 
-// 新增
 async function mAddWiki ({ nick_name, book_name, content }) {
   const ret = await NutReadWiki.create({
     nick_name,
@@ -65,7 +64,6 @@ async function mAddWiki ({ nick_name, book_name, content }) {
   return err({ message: "添加失败" });
 }
 
-// 查询
 async function mGetWikis ({ nick_name } = {}) {
   if (!nick_name) {
     return err({ message: "缺少花名" });
@@ -86,7 +84,6 @@ async function mGetWikis ({ nick_name } = {}) {
   return err({ message: "失败" });
 }
 
-// 查询所有记录
 async function mGetAllWikis () {
   const query = {
     where: {
@@ -103,16 +100,6 @@ async function mGetAllWikis () {
   return err({ message: "失败" });
 }
 
-// // 删除记录
-// async function removeAsset({ read_id }) {
-//   return NutReadWiki.update({ read_status: 0 }, {
-//     where: {
-//       read_id
-//     }
-//   });
-// }
-
-// 计算积分
 async function mGetWikiIntegral ({ nick_name }) {
   const integralRow = await sqlIns.query(`
     SELECT

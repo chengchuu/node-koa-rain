@@ -14,7 +14,7 @@ function jwtCreate(data, time) {
   return token;
 }
 async function authMiddleware(ctx, next) {
-  // 暂时只加五个接口
+  // Only the exact paths in this list require authentication.
   const token = ctx.headers.authorization;
   let authorList = [
     "/server/upload/query",

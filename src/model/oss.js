@@ -41,7 +41,7 @@ const MazeyOSS = sqlIns.define(
       type: DataTypes.STRING(50),
     },
     user_name: {
-      // 昵称
+      // Nickname
       type: DataTypes.STRING(20),
     },
   },
@@ -54,7 +54,6 @@ const MazeyOSS = sqlIns.define(
 
 MazeyOSS.sync();
 
-// 获取 OSS 配置
 async function getOSS ({ oss_user_id, oss_id }) {
   return MazeyOSS.findOne({
     where: {
@@ -65,7 +64,6 @@ async function getOSS ({ oss_user_id, oss_id }) {
   });
 }
 
-// 获取 OSS 配置列表
 async function mGetOSSConfs ({ oss_user_id, access_token }) {
   let where;
   if (!access_token) {
@@ -74,7 +72,7 @@ async function mGetOSSConfs ({ oss_user_id, access_token }) {
     };
   } else {
     where = {
-      // [Op.or]: [{ oss_user_id }, { access_token }]
+
       access_token,
     };
   }
@@ -86,7 +84,6 @@ async function mGetOSSConfs ({ oss_user_id, access_token }) {
   });
 }
 
-// [新]获取 OSS 配置列表
 async function mNewGetOSSConfs ({ token }) {
   const GetUserNameByPasswordRes = await mGetUserNameByPassword({ user_password: token });
   if (GetUserNameByPasswordRes.ret !== 0) {
@@ -109,12 +106,10 @@ async function mNewGetOSSConfs ({ token }) {
   return rsp({ data: { OSSConfs: ret } });
 }
 
-// 创建新的 OSS 配置
 async function mNewOSSConf ({ oss_name, region, access_key_id, access_key_secret, bucket, cdn_domain, oss_user_id, oss_is_public, access_token }) {
   return MazeyOSS.create({ oss_name, region, access_key_id, access_key_secret, bucket, cdn_domain, oss_user_id, oss_is_public, access_token });
 }
 
-// 创建新的 OSS 配置
 async function mAddOSSConf ({ ossName, region, accessKeyId, accessKeySecret, bucket, cdnDomain = "https://example.com/", userName }) {
   const cRes = await MazeyOSS.create({ oss_name: ossName, region, access_key_id: accessKeyId, access_key_secret: accessKeySecret, bucket, cdn_domain: cdnDomain, user_name: userName });
   if (cRes) {

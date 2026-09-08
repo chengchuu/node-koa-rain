@@ -8,7 +8,7 @@ tiny.get("/:key", async ctx => {
   const {
     data: { ori_link },
   } = await queryOriLinkByKey(ctx, { tiny_key });
-  // https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/302
+  // Use a temporary redirect: https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/302
   ctx.status = 302;
   ctx.redirect(ori_link);
 });

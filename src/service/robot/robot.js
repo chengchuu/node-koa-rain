@@ -1,6 +1,6 @@
 const logger = require("../../entities/logger");
 /* eslint-disable max-lines */
-// 机器人 应用层
+
 const schedule = require("node-schedule");
 const axios = require("axios");
 const { format, subDays, lastDayOfMonth, isWeekend, isSameDay, getDay, isSaturday, isTuesday, isWednesday, isThursday, isFriday, isMonday } = require("date-fns");
@@ -15,11 +15,10 @@ const { isDayOffDates, sRobotSendColorText, sRobotRemindForLowSugarFruits, sComm
 const { sGetWeatherDaily } = require("../weather");
 const weComRobotUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send";
 
-// 通用方法 - ↓↓↓
-// 机器人发送常规消息，type: info/绿色 comment/灰色 warning/黄色
+// Message colors: info is green, comment is gray, warning is yellow.
 function sRobotSendText ({ message = "", duration = "", key = "", immediately = false, isSkipDayOffDates = false } = {}) {
   const fn = () => {
-    // 判断是否在特殊休息日
+    // Honor configured days off when requested.
     if (isSkipDayOffDates) {
       const isDayOffDatesRes = isDayOffDates();
       if (isDayOffDatesRes.info === "yes") {
@@ -40,16 +39,15 @@ function sRobotSendText ({ message = "", duration = "", key = "", immediately = 
   if (immediately) {
     return fn();
   } else if (duration) {
-    // https://www.npmjs.com/package/node-schedule
+
     const job = schedule.scheduleJob(duration, fn);
     return job;
   }
 }
 
-// 机器人发送图片消息
 function sRobotSendImage ({ image = null, duration = "", key = "", immediately = false, isSkipDayOffDates = false } = {}) {
   const fn = () => {
-    // 判断是否在特殊休息日
+    // Honor configured days off when requested.
     if (isSkipDayOffDates) {
       const isDayOffDatesRes = isDayOffDates();
       if (isDayOffDatesRes.info === "yes") {
@@ -57,7 +55,7 @@ function sRobotSendImage ({ image = null, duration = "", key = "", immediately =
       }
     }
     let realImage = image;
-    // 动态图片
+    // Dynamic image selection
     if (Object.prototype.toString.call(image) === "[object Function]") {
       realImage = image();
     }
@@ -73,16 +71,15 @@ function sRobotSendImage ({ image = null, duration = "", key = "", immediately =
   if (immediately) {
     return fn();
   } else if (duration) {
-    // https://www.npmjs.com/package/node-schedule
+
     const job = schedule.scheduleJob(duration, fn);
     return job;
   }
 }
 
-// 机器人发送图文消息
 function sRobotSendNews ({ title = "", description = "", url = "", picurl = "", duration = "", key = "", immediately = false, isSkipDayOffDates = false } = {}) {
   const fn = () => {
-    // 判断是否在特殊休息日
+    // Honor configured days off when requested.
     if (isSkipDayOffDates) {
       const isDayOffDatesRes = isDayOffDates();
       if (isDayOffDatesRes.info === "yes") {
@@ -110,13 +107,13 @@ function sRobotSendNews ({ title = "", description = "", url = "", picurl = "", 
   if (immediately) {
     return fn();
   } else if (duration) {
-    // https://www.npmjs.com/package/node-schedule
+
     const job = schedule.scheduleJob(duration, fn);
     return job;
   }
 }
 
-// 最后一个工作日生日快乐
+// Send a birthday greeting on the last weekday of the month.
 function sRobotRemindLastWorkingDay ({
   target = "兔渡人",
   url = "https://blog.mazey.net/happy-birthday-to-you?hide_sidebar=1",
@@ -127,7 +124,7 @@ function sRobotRemindLastWorkingDay ({
   isSkipDayOffDates = false,
 } = {}) {
   const fn = () => {
-    // 判断是否在特殊休息日
+    // Honor configured days off when requested.
     if (isSkipDayOffDates) {
       const isDayOffDatesRes = isDayOffDates();
       if (isDayOffDatesRes.info === "yes") {
@@ -136,10 +133,10 @@ function sRobotRemindLastWorkingDay ({
     }
     const d = new Date();
     let lastWorkingDay = new Date("1994-04-13");
-    const lastDay = lastDayOfMonth(d); // 本月最后一天
-    const yesterdayOfLastDay = subDays(lastDay, 1); // 本月倒数第二天
-    const theDayBeforeYesterday = subDays(lastDay, 2); // 本月倒数第三天
-    // 是否是工作日 1 2 3 4 5
+    const lastDay = lastDayOfMonth(d);
+    const yesterdayOfLastDay = subDays(lastDay, 1);
+    const theDayBeforeYesterday = subDays(lastDay, 2);
+
     if (!isWeekend(lastDay)) {
       lastWorkingDay = lastDay;
     } else if (!isWeekend(yesterdayOfLastDay)) {
@@ -147,9 +144,7 @@ function sRobotRemindLastWorkingDay ({
     } else if (!isWeekend(theDayBeforeYesterday)) {
       lastWorkingDay = theDayBeforeYesterday;
     }
-    // 模拟
-    // lastWorkingDay = d;
-    // 今天是否是最后一个工作日
+
     if (isSameDay(d, lastWorkingDay)) {
       sRobotSendNews({
         title: `生日快乐 ${target}`,
@@ -164,13 +159,12 @@ function sRobotRemindLastWorkingDay ({
   if (immediately) {
     return fn();
   } else if (duration) {
-    // https://www.npmjs.com/package/node-schedule
+
     const job = schedule.scheduleJob(duration, fn);
     return job;
   }
 }
 
-// 提醒和白开水
 function sRobotRemindForDrinkWater ({
   title = "下午好",
   picurl = "https://i.mazey.net/asset/robot/STRDrinkWaterBanner-1000x426.jpg",
@@ -180,7 +174,7 @@ function sRobotRemindForDrinkWater ({
   isSkipDayOffDates = false,
 } = {}) {
   const fn = () => {
-    // 判断是否在特殊休息日
+    // Honor configured days off when requested.
     if (isSkipDayOffDates) {
       const isDayOffDatesRes = isDayOffDates();
       if (isDayOffDatesRes.info === "yes") {
@@ -227,16 +221,13 @@ function sRobotRemindForDrinkWater ({
   if (immediately) {
     return fn();
   } else if (duration) {
-    // https://www.npmjs.com/package/node-schedule
+
     const job = schedule.scheduleJob(duration, fn);
     return job;
   }
 }
 
-/**
- * @method sRobotRemindFeperf
- * @desc 前端性能提醒
- */
+/* Send frontend performance reminders. */
 async function sRobotRemindFeperf (ctx) {
   const { perfDays } = ctx.request.body;
   if (!Array.isArray(perfDays) || perfDays.length === 0) {
@@ -251,16 +242,16 @@ async function sRobotRemindFeperf (ctx) {
   const tomorrowIns = perfDays.find(({ report_day }) => report_day === tomorrow);
   const theDayBeforeYesterdayIns = perfDays.find(({ report_day }) => report_day === theDayBeforeYesterday);
   if (!tomorrowIns || !theDayBeforeYesterdayIns) {
-    // message = '数据缺失';
+
     return err({ message: "数据缺失" });
   }
-  // 日志
+
   sAddLog({
     ctx,
     log_type: "feperf",
     content: tomorrowIns,
   });
-  // 数据可视化链接
+
   const feDomain = "#rabbit";
   const topics = [
     { name: "#rabbit", id: "#rabbit", weekDay: 1 },
@@ -321,10 +312,7 @@ async function sRobotRemindFeperf (ctx) {
   }
   return rsp({ message: "成功" });
 }
-/**
- * @method sRobotRemindCardAddress
- * @des 发送地址新增或者改变消息(包含卡号)
- */
+/* Notify the robot when an address is added or changed, including the card number. */
 async function sRobotRemindCardAddress ({ card_number, address_detail, address_user, address_mobile, address_date, address_category, address_number }) {
   let content = `卡号: ${card_number}\n收货人: ${address_user}\n收货人手机号: ${address_mobile}\n详细地址: ${address_detail}\n发货日期: ${address_date}\n快递类型: ${address_category ||
     "京东"}\n快递单号: ${address_number || "暂无"}`;
@@ -344,18 +332,15 @@ async function sRobotRemindCardAddress ({ card_number, address_detail, address_u
   return rsp({ message: "成功" });
 }
 
-/**
- * @method sRobotRemindForConfirmTag
- * @desc 增加标签人工企业微信人工审核
- */
+/* Request manual tag review through WeCom. */
 async function sRobotRemindForConfirmTag ({ ctx, user_id, user_name, game_id, tags = [], tagList = [], contents = [], extra = {}, key = "", alias = "", repeat = true } = {}) {
-  // Repeat - begin
+
   if (repeat) {
     repeatSend(() => {
       sRobotRemindForConfirmTag({ ctx, user_id, user_name, game_id, tags, tagList, contents, extra, key: "", alias: "TestUrl", repeat: false });
     });
   }
-  // Repeat - end
+
   let realKey;
   if (alias) {
     const sGetRobotKeyByAliasRes = sGetRobotKeyByAlias({ alias });
@@ -376,7 +361,7 @@ async function sRobotRemindForConfirmTag ({ ctx, user_id, user_name, game_id, ta
     });
     ret += "\n";
   }
-  // 日志内容
+  // Log content
   let logContent = "";
   let link = "";
   if (contents.length) {
@@ -407,7 +392,7 @@ async function sRobotRemindForConfirmTag ({ ctx, user_id, user_name, game_id, ta
         ret += `${name}：<font color="comment">${tagRet}</font>`;
         logContent += `||${name}|${tagRet}`;
       }
-      // 如果是域名加路径，可以附加链接点击一下
+      // Include a clickable link when the content contains a domain and path.
       if (contents[0].name === "host" && contents[1].name === "url") {
         let tag_name = tagList.join(",");
         if (tagList.length > 1) {
@@ -451,18 +436,15 @@ async function sRobotRemindForConfirmTag ({ ctx, user_id, user_name, game_id, ta
   }
   return err({ message: "日志已存在" });
 }
-/**
- * @method sRobotRemindForCommonTag
- * @desc 通用带标签的前端提醒 CICD
- */
+/* Send tagged frontend CI/CD notifications. */
 async function sRobotRemindForCommonTag ({ ctx, tags = [], contents = [], extra = {}, key = "", alias = "", repeat = true } = {}) {
-  // Repeat - begin
+
   if (repeat) {
     repeatSend(() => {
       sRobotRemindForCommonTag({ ctx, tags, contents, extra, key: "", alias: "TestUrl", repeat: false });
     });
   }
-  // Repeat - end
+
   let realKey;
   if (alias) {
     const sGetRobotKeyByAliasRes = sGetRobotKeyByAlias({ alias });
@@ -483,7 +465,7 @@ async function sRobotRemindForCommonTag ({ ctx, tags = [], contents = [], extra 
     });
     ret += "\n";
   }
-  // 日志内容
+  // Log content
   let logContent = "";
   let link = "";
   if (contents.length) {
@@ -504,7 +486,7 @@ async function sRobotRemindForCommonTag ({ ctx, tags = [], contents = [], extra 
       const value = contents[2].value;
       ret += `${name}：<font color="info">${value}</font>`;
       logContent += `||${name}|${value}`;
-      // 如果是域名加路径，可以附加链接点击一下
+      // Include a clickable link when the content contains a domain and path.
       if (contents[0].name === "host" && contents[1].name === "url") {
         link = `${contents[0].value}${contents[1].value}`;
       }
@@ -540,133 +522,117 @@ async function sRobotRemindForCommonTag ({ ctx, tags = [], contents = [], extra 
   }
   return err({ message: "日志已存在" });
 }
-// 通用方法 - ↑↑↑
 
-/**
- * @method sRobotRemindForCommunity
- * @desc Community Bot
- */
+/* Send community notifications. */
 function sRobotRemindForCommunity (repeatKey = "", repeat = true) {
-  // Repeat - begin
+
   if (repeat) {
     repeatSend(() => {
       sRobotRemindForCommunity(alias2Key.get("TestUrl"), false);
     });
   }
-  // Repeat - end
+
   const key = repeatKey || alias2Key.get("forumFEHelperKey");
   return [
-    // 每月生日
+    // Monthly birthday greeting
     sRobotRemindLastWorkingDay({
-      duration: "0 5 15 * * 1-5", // 15:05
+      duration: "0 5 15 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
   ];
 }
 
-/**
- * @method sRobotRemindForGetOff
- * @desc 提醒下班
- */
+/* Send end-of-work reminders. */
 function sRobotRemindForGetOff (repeatKey = "", repeat = true) {
-  // Repeat - begin
+
   if (repeat) {
     repeatSend(() => {
       sRobotRemindForGetOff("TestUrl", false);
     });
   }
-  // Repeat - end
+
   const alias = repeatKey || "getOffKey";
   return [
-    // 提醒下班
+    // End-of-work reminder
     sCommonRobotSend({
       alias,
       type: "markdown",
       data: {
         content: "<font color=comment>咳咳</font>\n \n<font color=info>咳咳</font>\n \n<font color=warning>咳咳</font>\n \n咳咳",
       },
-      duration: "0 55 18 * * 1-5", // 18:55
+      duration: "0 55 18 * * 1-5",
       isSkipDayOffDates: true,
     }),
   ];
 }
 
-/**
- * @method sRobotRemindForTouchFish01
- * @desc 提醒摸鱼 01
- */
+/* Send the first break reminder. */
 function sRobotRemindForTouchFish01 (repeatKey = "", repeat = true) {
-  // Repeat - begin
+
   if (repeat) {
     repeatSend(() => {
       sRobotRemindForTouchFish01("TestUrl", false);
     });
   }
-  // Repeat - end
+
   const {
     data: { key },
   } = sGetRobotKeyByAlias({ alias: repeatKey || "touchFish01Key" });
   return [
-    // 提醒摸鱼
+    // Break reminder
     sRobotSendNews({
       title: "休息一会儿吧！",
       description:
         "过劳对个人的身体健康带来损害，长期处于高负荷的工作状态，未能让身体得到有效的休息，就像一台高速运转的机器般会出现各种症状，除了总量越来越大的亚健康患者群体，还有数量越来越多的猝死案例。\n另外，超长工作并不利于工作效率的提高，而是走向事态的反面。实践证明，通过改善员工的心理健康状况，能给企业带来巨大的经济效益。",
       url: "https://blog.mazey.net/take-a-rest?hide_sidebar=1",
       picurl: "https://blog.mazey.net/wp-content/uploads/2021/12/TouchFishBanner-520x222-1.jpg",
-      duration: "0 0 17 * * 1-5", // 17:00
+      duration: "0 0 17 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
   ];
 }
 
-/**
- * @method sRobotRemindForTouchFish02
- * @desc 提醒摸鱼 02
- */
+/* Send the second break reminder. */
 function sRobotRemindForTouchFish02 (repeatKey = "", repeat = true) {
-  // Repeat - begin
+
   if (repeat) {
     repeatSend(() => {
       sRobotRemindForTouchFish02("TestUrl", false);
     });
   }
-  // Repeat - end
+
   const {
     data: { key },
   } = sGetRobotKeyByAlias({ alias: repeatKey || "touchFish02Key" });
   return [
-    // 提醒摸鱼
+    // Break reminder
     sRobotSendNews({
       title: "休息一会儿吧！",
       description:
         "过劳对个人的身体健康带来损害，长期处于高负荷的工作状态，未能让身体得到有效的休息，就像一台高速运转的机器般会出现各种症状，除了总量越来越大的亚健康患者群体，还有数量越来越多的猝死案例。\n另外，超长工作并不利于工作效率的提高，而是走向事态的反面。实践证明，通过改善员工的心理健康状况，能给企业带来巨大的经济效益。",
       url: "https://blog.mazey.net/take-a-rest?hide_sidebar=1",
       picurl: "https://blog.mazey.net/wp-content/uploads/2021/12/TouchFishBanner-520x222-1.jpg",
-      duration: "0 0 17 * * 1-5", // 17:00
+      duration: "0 0 17 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
   ];
 }
 
-/**
- * @method sRobotRemindForStronger
- * @desc Stronger Bot
- */
+/* Schedule Stronger robot reminders. */
 function sRobotRemindForStronger (repeatKey = "", repeat = true) {
-  // Repeat - begin
+
   if (repeat) {
     repeatSend(() => {
       sRobotRemindForStronger(alias2Key.get("TestUrl"), false);
     });
   }
-  // Repeat - end
+
   const key = repeatKey || alias2Key.get("strongerKey");
   return [
-    // 天气预报
+    // Weather forecast
     sRobotSendColorText({
       messageFn: async () => {
         const GetWeatherDailyResSH = await sGetWeatherDaily({ location: "shanghai" });
@@ -692,134 +658,131 @@ function sRobotRemindForStronger (repeatKey = "", repeat = true) {
         return `${msgSH}\n \n${msgBJ}`;
       },
       key,
-      duration: "0 0 9 * * 1-5", // 09:00
+      duration: "0 0 9 * * 1-5",
       isSkipDayOffDates: true,
     }),
-    // 提醒今天是周几[1-5]
+    // Weekday reminder
     sRobotSendImage({
       image: () => robotImages[`today-${new Date().getDay()}`],
-      duration: "0 0 10 * * 1-5", // 10:00
+      duration: "0 0 10 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
-    // 提醒点外卖
+    // Meal ordering reminder
     sRobotSendNews({
       title: "外卖 Time !!!",
       description: "《中国居民膳食指南》建议：\n1. 食物多样，谷类为主\n2. 吃动平衡，健康体重\n3. 多吃蔬果、奶类、大豆\n4. 适量吃鱼、禽、蛋、瘦肉\n5. 少盐少油，控糖限酒\n6. 杜绝浪费，兴新食尚",
       url: "https://docs.qq.com/sheet/rabbit?tab=rabbit",
       picurl: "https://i.mazey.net/asset/robot/BannerTakeOutTime-20211120-520x222.jpg",
-      duration: "0 0 11 * * 1-5", // 11:00
+      duration: "0 0 11 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
-    // 提醒拿外卖
+    // Meal pickup reminder
     sRobotSendNews({
       title: "[错峰出行]拿外卖 or 热饭",
       description: "作为新时代的兔渡人：\n-- 早上要吃好（九点前）\n-> 中午要吃饱（十二点）\n-- 晚上要吃少（八点前）\n \n长时间饮食的不规律\n就慢~慢~慢~变胖了！",
       url: "https://blog.mazey.net/2324.html?hide_sidebar=1",
       picurl: "https://i.mazey.net/asset/robot/STRBannerEatTime-520x211.jpg",
-      duration: "0 55 11 * * 1-5", // 11:55
+      duration: "0 55 11 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
-    // duration: '0 0 15 * * 2,4-5', // 15:00
-    // 提醒不要翘二郎腿
+
+    // Posture reminder
     sRobotSendNews({
       title: "翘二郎腿的危害有哪些",
       description: "这个姿势也许能让你一时舒爽，却给全身埋下了“健康炸弹”！！！\n1. 损伤腰背肌肉和脊椎\n2. 导致 O 型腿\n3. 导致膝关节疼痛\n4. 加重静脉曲张\n5. 造成下肢血栓\n6. 导致不孕不育",
       url: "https://blog.mazey.net/2321.html?hide_sidebar=1",
       picurl: "https://i.mazey.net/asset/robot/StrLegDown-520x221.jpg",
-      duration: "0 0 15 * * 1", // 15:00
+      duration: "0 0 15 * * 1",
       key,
       isSkipDayOffDates: true,
     }),
-    // 提醒不要久坐
+    // Movement reminder
     sRobotSendNews({
       title: "久坐的危害有哪些",
       description:
         "久坐会导致脂肪囤积在腰腹部，从而导致身体肥胖；若体内脂肪囤积过多，会诱发高血压、糖尿病、心脏病等疾病。同时，长期坐着对颈椎的发育不好，还会引起头痛、头晕、四肢麻木的症状，甚至会诱发坐骨神经痛。",
       url: "https://blog.mazey.net/2273.html?hide_sidebar=1",
       picurl: "https://i.mazey.net/asset/robot/StrStandUp-520x222.jpg",
-      duration: "0 0 15 * * 2,4", // 15:00
+      duration: "0 0 15 * * 2,4",
       key,
       isSkipDayOffDates: true,
     }),
-    // 提醒情绪稳定
+    // Emotional well-being reminder
     sRobotSendNews({
       title: "每天演好一个情绪稳定的成年人",
       description: "情绪不稳定，经常发火，可能是因为没有计划，生活一团乱，事情一多，就烦躁不已。\n平时坚持锻炼，规律作息，让生活有条理，过滤掉生活中无意义的事，直面问题，对于稳定个人情绪有很大帮助。",
       url: "https://blog.mazey.net/2489.html?hide_sidebar=1",
       picurl: "https://blog.mazey.net/wp-content/uploads/2021/12/EmotionormalBanner-534x228-1.jpg",
-      duration: "0 0 15 * * 3", // 15:00
+      duration: "0 0 15 * * 3",
       key,
       isSkipDayOffDates: true,
     }),
-    // 提醒健康吃水果
+    // Fruit reminder
     sRobotRemindForLowSugarFruits({
       alias: "strongerKey",
-      duration: "0 0 15 * * 5", // 15:00
+      duration: "0 0 15 * * 5",
       isSkipDayOffDates: true,
     }),
-    // 每月生日
+    // Monthly birthday greeting
     sRobotRemindLastWorkingDay({
       target: "斯壮格尔",
       picurl: "https://rabbit-cn-cdn.rabbitgames.com/asset/forum/str-last-working-day.jpg",
-      duration: "0 5 15 * * 1-5", // 15:05
+      duration: "0 5 15 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
-    // 提醒喝白开水
+    // Hydration reminder
     sRobotRemindForDrinkWater({
       title: "下午好 让我们共饮一杯白开水",
       picurl: "https://i.mazey.net/asset/robot/STRDrinkWaterBanner-1000x426.jpg",
-      duration: "0 0 16 * * 1-5", // 16:00
+      duration: "0 0 16 * * 1-5",
       key,
       isSkipDayOffDates: true,
     }),
-    // 提醒下班
+    // End-of-work reminder
     sRobotSendImage({
       image: robotImages["cat-offline"],
-      duration: "0 0 19 * * 1", // 19:00
+      duration: "0 0 19 * * 1",
       key,
       isSkipDayOffDates: true,
     }),
     sRobotSendImage({
       image: robotImages["robot-offline"],
-      duration: "0 0 19 * * 2", // 19:00
+      duration: "0 0 19 * * 2",
       key,
       isSkipDayOffDates: true,
     }),
     sRobotSendImage({
       image: robotImages["get-off-work-bye"],
-      duration: "0 0 19 * * 3", // 19:00
+      duration: "0 0 19 * * 3",
       key,
       isSkipDayOffDates: true,
     }),
     sRobotSendImage({
       image: robotImages["get-off-work-xiaban"],
-      duration: "0 0 19 * * 4", // 19:00
+      duration: "0 0 19 * * 4",
       key,
       isSkipDayOffDates: true,
     }),
     sRobotSendImage({
       image: robotImages["el-offline"],
-      duration: "0 0 19 * * 5", // 19:00
+      duration: "0 0 19 * * 5",
       key,
       isSkipDayOffDates: true,
     }),
   ];
 }
 
-/**
- * @method sRobotRemindForFeishuStronger
- * @desc Stronger Bot in Feishu
- */
+/* Schedule Stronger reminders in Feishu. */
 function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
   const isSkipDayOffDates = true;
   const immediately = false;
   const target = "feishu";
   return [
-    // 天气预报
+    // Weather forecast
     sCommonRobotSend({
       target,
       alias,
@@ -843,9 +806,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 9 * * 1-5", // 09:00
+      duration: "0 0 9 * * 1-5",
     }),
-    // 提醒今天是周几[1-5]
+    // Weekday reminder
     sCommonRobotSend({
       target,
       alias,
@@ -875,9 +838,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 10 * * 1-5", // 10:00
+      duration: "0 0 10 * * 1-5",
     }),
-    // 提醒点外卖
+    // Meal ordering reminder
     sCommonRobotSend({
       target,
       alias,
@@ -938,9 +901,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 11 * * 1-5", // 11:00
+      duration: "0 0 11 * * 1-5",
     }),
-    // 提醒拿外卖
+    // Meal pickup reminder
     sCommonRobotSend({
       target,
       alias,
@@ -995,9 +958,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 55 11 * * 1-5", // 11:55
+      duration: "0 55 11 * * 1-5",
     }),
-    // 提醒不要翘二郎腿
+    // Posture reminder
     sCommonRobotSend({
       target,
       alias,
@@ -1058,9 +1021,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 15 * * 1", // 15:00
+      duration: "0 0 15 * * 1",
     }),
-    // 提醒不要久坐
+    // Movement reminder
     sCommonRobotSend({
       target,
       alias,
@@ -1086,9 +1049,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 15 * * 2,4", // 15:00
+      duration: "0 0 15 * * 2,4",
     }),
-    // 提醒情绪稳定
+    // Emotional well-being reminder
     sCommonRobotSend({
       target,
       alias,
@@ -1114,9 +1077,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 15 * * 3", // 15:00
+      duration: "0 0 15 * * 3",
     }),
-    // 提醒健康吃水果
+    // Fruit reminder
     sCommonRobotSend({
       target,
       alias,
@@ -1142,10 +1105,10 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 15 * * 5", // 15:00
+      duration: "0 0 15 * * 5",
     }),
-    // 每月生日
-    // 提醒喝白开水
+    // Monthly birthday greeting
+    // Hydration reminder
     sCommonRobotSend({
       target,
       alias,
@@ -1170,9 +1133,9 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       },
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 16 * * 1-5", // 16:00
+      duration: "0 0 16 * * 1-5",
     }),
-    // 提醒下班
+    // End-of-work reminder
     sCommonRobotSend({
       target,
       alias,
@@ -1180,25 +1143,21 @@ function sRobotRemindForFeishuStronger ({ alias = "feishuStronger" } = {}) {
       data: "下线了，再见！",
       immediately,
       isSkipDayOffDates,
-      duration: "0 0 19 * * 1-5", // 19:00
+      duration: "0 0 19 * * 1-5",
     }),
   ];
 }
 
-/**
- * @method sRobotFeishuGroup
- * @desc Bots in Feishu
- */
+/* Configure Feishu robot groups. */
 function sRobotFeishuGroup () {
   sRobotRemindForFeishuStronger({ alias: "feishuStronger" });
   sRobotRemindForFeishuStronger({ alias: "forHeart" });
   sRobotRemindForFeishuStronger({ alias: "strongerGroup" });
   sRobotRemindForFeishuStronger({ alias: "stronger001" });
-  // 知问兔 斯壮格尔Beta
+  // Zhiwentu Stronger Beta
   sRobotRemindForFeishuStronger({ alias: "feishuTest" });
 }
 
-// 测试
 async function testSend () {}
 
 module.exports = {
