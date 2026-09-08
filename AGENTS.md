@@ -124,6 +124,7 @@ Treat client-supplied upload targets as filesystem input and validate them befor
 - Use `debug` for safe diagnostics, `info` for meaningful completed operations, `warn` for recoverable degradation, and `error` for failed operations. Log completion only after it occurs.
 - Use stable English messages such as `[upload] speech file stored`. Put approved counts, durations, and status values in lower camel case fields, not in message strings.
 - Output is newline-delimited JSON. Levels below `error` go to stdout; `error` and `fatal` go to stderr exactly once. Synchronous writes preserve final records before exit for PM2 collection.
+- Output writes retain byte offsets across short writes and temporary `EAGAIN` failures. Synchronous backpressure can delay request handling while a collector is paused. `EPIPE` disables only the closed output; other I/O errors propagate.
 - Pass errors as `{ err: error }` with a fixed event message. The serializer keeps allowlisted types, `errorCode` values, numeric HTTP status values, and existing repository-relative application stack locations. It omits raw messages, stack headers, function names, absolute paths, and extra error properties.
 - Never pass secrets, verification codes, personal information, arbitrary content, configuration, Koa contexts, request/response objects, or credential-bearing URLs to telemetry. Configured redaction paths are a secondary safeguard, not a general string sanitizer. Sequelize SQL logging is disabled.
 - Preserve existing promise behavior: rejection handlers that previously swallowed errors must still return `undefined` after logging. Error-propagation fixes require separate review.
@@ -174,8 +175,9 @@ The checked-in development config contains placeholders for MySQL, JWT, weather,
 - Foreground production-style PM2 run: `npm run start:nodaemon`
 - Stop/restart PM2: `npm run stop` / `npm run restart`
 - Lint and auto-fix: `npm run lint`
-- Read-only lint: `./node_modules/.bin/eslint src scripts/test-logger.js scripts/test-logging-integrations.js scripts/verify-logging.js scripts/verify-comments.js`
+- Read-only lint: `./node_modules/.bin/eslint src scripts/test-logger.js scripts/test-logger-pipes.js scripts/test-logging-integrations.js scripts/verify-logging.js scripts/verify-comments.js`
 - Logger output and redaction checks: `node scripts/test-logger.js`
+- Closed and paused output collector checks: `node scripts/test-logger-pipes.js`
 - Mocked logging integration checks: `node scripts/test-logging-integrations.js`
 - Application console and message audit: `node scripts/verify-logging.js`
 - Repository-owned comment audit: `node scripts/verify-comments.js`

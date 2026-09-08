@@ -6,9 +6,11 @@ const acorn = require("acorn");
 function inspect(source) {
   const failures = [];
   const tree = acorn.parse(source, { ecmaVersion: 2018, locations: true });
-  function visit(node) {
+  function visit(node, parent, grandparent) {
     if (!node || typeof node !== "object") return;
-    if ((node.type === "Identifier" && node.name === "console") ||
+    const objectKey = parent && parent.type === "Property" && parent.key === node &&
+      !parent.computed && !parent.shorthand && grandparent.type === "ObjectExpression";
+    if ((node.type === "Identifier" && node.name === "console" && !objectKey) ||
         (node.type === "MemberExpression" && node.computed && node.property.type === "Literal" && node.property.value === "console") ||
         (node.type === "CallExpression" && node.callee.name === "require" && node.arguments[0] && /^(node:)?console$/.test(node.arguments[0].value))) {
       failures.push("Direct console reference at line " + node.loc.start.line);
@@ -21,8 +23,8 @@ function inspect(source) {
     }
     Object.keys(node).forEach(key => {
       const value = node[key];
-      if (Array.isArray(value)) value.forEach(visit);
-      else if (value && typeof value === "object") visit(value);
+      if (Array.isArray(value)) value.forEach(child => visit(child, node, parent));
+      else if (value && typeof value === "object") visit(value, node, parent);
     });
   }
   visit(tree);
@@ -37,7 +39,8 @@ function sourceFiles(directory) {
 }
 function selfTest() {
   [ "console.log('x');", "promise.catch(console.error);", "const log = console.log;", "const { error } = console;", "global.console.warn('x');", "global['console'].warn('x');", "require('console').error('x');", "const { console: output } = global;" ].forEach(source => assert(inspect(source).length, source));
-  [ "const text = 'console.log';", "// console.error('x');\nconst x = 1;", "logger.info({ count: 1 }, '[test] completed');" ].forEach(source => assert.deepStrictEqual(inspect(source), []));
+  [ "const text = 'console.log';", "// console.error('x');\nconst x = 1;", "const config = { console: false };", "logger.info({ count: 1 }, '[test] completed');" ].forEach(source => assert.deepStrictEqual(inspect(source), []));
+  [ "const alias = { console };", "const config = { [console]: false };", "const config = { console: console };" ].forEach(source => assert(inspect(source).length, source));
   assert(inspect("logger.info('[test] ' + value);").length);
 }
 if (require.main === module) {

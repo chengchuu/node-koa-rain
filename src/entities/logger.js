@@ -48,6 +48,9 @@ const sensitiveKeys = [
 const redact = sensitiveKeys.reduce((paths, key) => paths.concat(key, "*." + key), []);
 redact.push("req.headers.authorization", "req.headers.cookie", "request.headers.authorization", "request.headers.cookie");
 
+const closedOutputs = new Set();
+const writeWait = new Int32Array(new SharedArrayBuffer(4));
+
 module.exports = pino({
   level: process.env.LOG_LEVEL === undefined ? "info" : process.env.LOG_LEVEL,
   serializers: { err: serializeError },
@@ -55,6 +58,22 @@ module.exports = pino({
 }, {
   // Synchronous writes retain final records on exit and let PM2 collect both streams.
   write(line) {
-    fs.writeSync(JSON.parse(line).level >= 50 ? 2 : 1, line);
+    const fd = JSON.parse(line).level >= 50 ? 2 : 1;
+    if (closedOutputs.has(fd)) return;
+    const bytes = Buffer.from(line);
+    let offset = 0;
+    while (offset < bytes.length) {
+      try {
+        offset += fs.writeSync(fd, bytes, offset, bytes.length - offset);
+      } catch (error) {
+        if (error.code === "EPIPE") {
+          closedOutputs.add(fd);
+          return;
+        }
+        if (error.code !== "EAGAIN") throw error;
+        // A paused collector can fill a nonblocking pipe; retain the unwritten bytes.
+        Atomics.wait(writeWait, 0, 0, 10);
+      }
+    }
   },
 });
