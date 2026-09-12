@@ -1,8 +1,8 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes } = require("sequelize");
 const { acquireNewUser } = require("./user");
 
-// 访客表
 const ddTableInfo = {
   tableName: "mazey_visitor",
   createdAt: "visitor_time",
@@ -76,7 +76,7 @@ const MazeyVisitor = sqlIns.define(
 
 MazeyVisitor.sync();
 
-// ip
+// IP
 async function saveIPInfo ({
   $visitorIP,
   $continent,
@@ -95,7 +95,7 @@ async function saveIPInfo ({
   visitor_temperature_low,
   visitor_fingerprint,
 }) {
-  // 自增新用户
+
   if (visitor_fingerprint) {
     acquireNewUser({
       user_signup_ip: $visitorIP,
@@ -123,19 +123,19 @@ async function saveIPInfo ({
   };
   return MazeyVisitor.create(createData)
     .then(r => {
-      // pass
-      console.log("_ r:", r);
+
     })
     .catch(e => {
       if (e.message.includes("doesn't exist")) {
         MazeyVisitor.sync()
           .then(() => MazeyVisitor.create(createData))
-          .catch(console.error);
+          .catch(error => {
+            logger.error({ err: error }, "[visitor] visitor information save failed");
+          });
       }
     });
 }
 
-// 最近访客
 async function queryVisitors () {
   return MazeyVisitor.findAll({
     order: [ [ "visitor_id", "DESC" ] ],

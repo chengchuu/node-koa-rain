@@ -4,14 +4,14 @@ const { mAddLog, mIsExistContent } = require("../model/log");
 const { sRobotSendColorText, sGetRobotKeyByAlias } = require("./robot/index.js");
 const { sGetIP } = require("./user");
 
-// 新增日志 - 使用驼峰，遗弃下划线 log_type
+// Prefer logType while retaining the legacy log_type fallback.
 async function sAddLog({ ctx, logType, content, log_type, isEncode = false }) {
   const tempType = logType || log_type;
   if (typeof content === "object") {
     content = JSON.stringify(content);
   }
   if (isEncode) {
-    // 对 base64 的数据进行解码
+
     let buff = Buffer.from(content, "base64");
     content = buff.toString("utf-8");
   }
@@ -24,7 +24,6 @@ async function sAddLog({ ctx, logType, content, log_type, isEncode = false }) {
       data: { ip },
     } = await sGetIP(ctx));
   }
-  console.log("sAddLog:", { tempType, content, ip, isEncode });
   const AddLogRes = await mAddLog({ log_type: tempType, ip, content });
   if (AddLogRes.ret === 0) {
     if (isEncode) {
@@ -35,9 +34,8 @@ async function sAddLog({ ctx, logType, content, log_type, isEncode = false }) {
   return AddLogRes;
 }
 
-// 内容是否存在
 async function sIsExistContent({ ctx, content }) {
-  // 先在队列中判断没有再请求数据库
+  // Check the process-local duplicate buffer before querying MySQL.
   let { logContent = [] } = ctx;
   let index = logContent.findIndex(item => item === content);
   if (index > -1) {
@@ -55,23 +53,17 @@ async function sIsExistContent({ ctx, content }) {
 }
 
 /**
- * @method sReportErrorInfo
- * @description 发送通用报错日志
- * @param {Object} ctx 上下文
- * @param {String} logType 日志类型 unknown_error server_error js_error request_error
- * @param {Object} err 错误对象
- * @param {String} pageTitle 页面标题 Title
- * @param {String} url 链接
- * @param {String} alias KEY别名 orangeKey 小橘子
- * @return {Object} 是否正确上报
- * */
+ * @description Send a robot error notification and persist the existing business log.
+ * @param {object} options - Context, error, log type, page title, URL, and robot alias.
+ * @returns {Promise<object>} Existing reporting response envelope.
+ */
 async function sReportErrorInfo({ ctx, logType = "unknown_error", err = {}, pageTitle = "", url = "", alias = "orangeKey" } = {}) {
   let requestUrl = "";
   if (ctx.request && ctx.request.url && ctx.request.header) {
     url = `${ctx.request.header.host}${ctx.request.url}`;
   }
   url = url || requestUrl;
-  // 要旨 摘要 栈
+
   let { message = "", stack = "" } = err;
   let errContent = `\`#错误日志\` \`#${logType}\``;
   if (pageTitle) {
@@ -95,7 +87,7 @@ async function sReportErrorInfo({ ctx, logType = "unknown_error", err = {}, page
   if (errContent.length >= 4000) {
     errContent = errContent.substring(0, 4000);
   }
-  // 机器人提醒
+
   const GetRobotKeyByAliasRes = sGetRobotKeyByAlias({ alias });
   if (GetRobotKeyByAliasRes.ret === 0) {
     const {
@@ -109,7 +101,7 @@ async function sReportErrorInfo({ ctx, logType = "unknown_error", err = {}, page
   } else {
     return GetRobotKeyByAliasRes;
   }
-  // 存日志
+
   sAddLog({ logType, content: errContent });
   return rsp();
 }

@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes, Op } = require("sequelize");
 const { err } = require("../entities/error");
@@ -14,15 +15,15 @@ const MazeyUser = sqlIns.define(
       autoIncrement: true,
     },
     user_name: {
-      // 昵称
+      // Nickname
       type: DataTypes.STRING(20),
     },
     real_name: {
-      // 真实姓名
+      // Real name
       type: DataTypes.STRING(20),
     },
     user_password: {
-      // 密码
+      // Password
       type: DataTypes.STRING(40),
     },
     user_sex: {
@@ -56,7 +57,7 @@ const MazeyUser = sqlIns.define(
 );
 
 MazeyUser.sync();
-// 新增用户
+
 async function acquireNewUser ({ user_signup_ip, user_signup_city, user_fingerprint, user_name, real_name, user_password = "", user_email = "" }) {
   const amount = await MazeyUser.count({
     where: {
@@ -72,7 +73,9 @@ async function acquireNewUser ({ user_signup_ip, user_signup_city, user_fingerpr
       user_fingerprint,
       user_signup_city,
       user_password,
-    }).catch(console.error);
+    }).catch(error => {
+      logger.error({ err: error }, "[user] user creation failed");
+    });
     if (ret && ret.dataValues) {
       return rsp({ data: ret.dataValues });
     }
@@ -81,7 +84,6 @@ async function acquireNewUser ({ user_signup_ip, user_signup_city, user_fingerpr
   return rsp({ message: "用户已存在或邮箱已注册" });
 }
 
-// 查询用户 uid
 async function getUid ({ user_name, user_email, user_fingerprint }) {
   let where;
   if (user_name) {
@@ -94,10 +96,11 @@ async function getUid ({ user_name, user_email, user_fingerprint }) {
   if (!where) return false;
   return MazeyUser.findOne({
     where,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] user lookup failed");
+  });
 }
 
-// 用户登录
 async function mLogin ({ user_name, user_password }) {
   const ret = await MazeyUser.findOne({
     where: {
@@ -109,11 +112,12 @@ async function mLogin ({ user_name, user_password }) {
         },
       },
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] login failed");
+  });
   if (!ret) {
     return err({ message: "用户不存在" });
   }
-  console.log("ret", ret);
   const { user_password: realPassword } = ret;
   const {
     data: { token: requestPassword },
@@ -125,11 +129,10 @@ async function mLogin ({ user_name, user_password }) {
   return err({ message: "密码错误" });
 }
 
-// 生成 Token
 function mGenToken ({ str }) {
   return rsp({ data: { token: md5(`${str}+${pswSecret}`) } });
 }
-// 获取用户Id（根据token密码）
+// Look up the user ID using the token password.
 async function mGetUserIdByPassword ({ user_password }) {
   const ret = await MazeyUser.findOne({
     where: {
@@ -141,7 +144,9 @@ async function mGetUserIdByPassword ({ user_password }) {
         },
       },
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] user lookup failed");
+  });
   if (!ret) {
     return err({ message: "用户不存在" });
   }
@@ -149,7 +154,7 @@ async function mGetUserIdByPassword ({ user_password }) {
   return rsp({ data: { userId } });
 }
 
-// 获取用户名和id（根据密码）2023319 弃用
+// Legacy password-based lookup, marked deprecated in the original implementation.
 async function mGetUserNameByPassword ({ user_password }) {
   const ret = await MazeyUser.findOne({
     where: {
@@ -167,7 +172,9 @@ async function mGetUserNameByPassword ({ user_password }) {
         },
       },
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[user] user lookup failed");
+  });
   if (!ret) {
     return err({ message: "用户不存在" });
   }

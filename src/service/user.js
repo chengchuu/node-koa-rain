@@ -1,4 +1,5 @@
-// 用户
+const logger = require("../entities/logger");
+
 const { err } = require("../entities/err");
 const { rsp } = require("../entities/response");
 const { getUid, acquireNewUser, mLogin, mGenToken } = require("../model/user");
@@ -11,9 +12,9 @@ const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
 const axios = require("axios");
 const { format } = require("date-fns");
 const md5 = require("md5");
-// 校验
+
 const Joi = require("joi");
-// 获取 uid
+
 async function sGetUid(ctx) {
   if (ctx.query.uid) return rsp({ data: { uid: Number(ctx.query.uid) } });
   const uidRes = await getUid(ctx.query);
@@ -27,13 +28,12 @@ async function sGetUid(ctx) {
   return rsp({ data: { uid } });
 }
 
-// 获取用户 IP 城市 天气
 async function sGetUserInfo(ctx) {
-  // ip
+  // IP
   const headers = ctx.request.headers;
   const XForwardedFor = headers["x-forwarded-for"] || "";
   const ip = (XForwardedFor.split(", ") && XForwardedFor.split(", ")[0]) || "114.88.250.157";
-  // 城市
+
   let ret = null;
   let ipResult = null;
   try {
@@ -46,7 +46,9 @@ async function sGetUserInfo(ctx) {
           Authorization: "APPCODE #rabbit",
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[user] user information lookup failed");
+      });
   } catch (error) {
     return err({ message: "saip error" });
   }
@@ -58,17 +60,17 @@ async function sGetUserInfo(ctx) {
     showapi_res_body = ret.showapi_res_body || {};
   }
   const {
-    isp: operator = "", // 运营商
-    continents: continent = "", // 洲
-    country = "", // 国
-    region: province = "", // 省
-    city = "", // 市
-    county = "", // 县
-    lnt = "", // 经
-    lat = "", // 纬
+    isp: operator = "", // Network operator
+    continents: continent = "", // Continent
+    country = "", // Country
+    region: province = "", // Province
+    city = "", // City
+    county = "", // County
+    lnt = "", // Longitude
+    lat = "", // Latitude
   } = showapi_res_body;
   const location = { operator, continent, country, province, city, county, lnt, lat };
-  // 天气
+
   const weatherLocation = county || city || province;
   let daily = [];
   if (ret) {
@@ -80,7 +82,9 @@ async function sGetUserInfo(ctx) {
         .then(function(data) {
           return data;
         })
-        .catch(console.error));
+        .catch(error => {
+          logger.error({ err: error }, "[user] user information lookup failed");
+        }));
     } catch (error) {
       return err({ message: "getWeatherDaily error" });
     }
@@ -102,7 +106,6 @@ async function sAddNewUser(ctx, nick_name, real_name = "", user_password = "", u
       .required()
       .error(errors => {
         for (let valErr of errors) {
-          console.log(valErr.code);
           switch (valErr.code) {
             case "string.max":
               return new Error("用户名长度不能超过20");
@@ -134,7 +137,7 @@ async function sAddNewUser(ctx, nick_name, real_name = "", user_password = "", u
       location: { city },
     },
   } = GetUserInfoRes;
-  // 新增用户
+
   const {
     data: { token: requestPassword },
   } = user_password ? mGenToken({ str: user_password }) : { data: { token: "" } };
@@ -160,11 +163,10 @@ async function sAddNewUser(ctx, nick_name, real_name = "", user_password = "", u
     verify_status: 0,
     code: sendMailCode,
   });
-  // 成功后把验证码和user_id存进code表
+  // Store the verification code with the new user ID.
   return acquireNewUserRes;
 }
 
-// 添加新用户
 async function sGetIP(ctx) {
   const headers = ctx.request.headers;
   const XForwardedFor = headers["x-forwarded-for"] || "";
@@ -172,9 +174,7 @@ async function sGetIP(ctx) {
   return rsp({ data: { ip } });
 }
 
-// 登录
 async function sLogin({ ctx, user_name, user_password }) {
-  console.log("_ ctx:", ctx);
   if (!user_name) {
     return err({ message: "请输入用户名" });
   }
@@ -184,7 +184,6 @@ async function sLogin({ ctx, user_name, user_password }) {
   return mLogin({ user_name, user_password });
 }
 
-// 生成 Token
 function sGenToken({ str }) {
   return mGenToken({ str });
 }

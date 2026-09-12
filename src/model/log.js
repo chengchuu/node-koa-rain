@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes } = require("sequelize");
 const { rsp } = require("../entities/response");
@@ -8,29 +9,29 @@ const MazeyLog = sqlIns.define(
   "MazeyLog",
   {
     log_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     user_id: {
-      // 用户 ID
+      // User ID
       type: DataTypes.INTEGER,
     },
     user_name: {
-      // 姓名
+      // Name
       type: DataTypes.STRING(20),
     },
     log_type: {
-      // 日志类型
+      // Log type
       type: DataTypes.STRING(20),
     },
     ip: {
-      // ip
+      // IP
       type: DataTypes.STRING(20),
     },
     content: {
-      // 日志内容
+      // Log content
       type: DataTypes.STRING(500),
     },
   },
@@ -43,22 +44,24 @@ const MazeyLog = sqlIns.define(
 
 MazeyLog.sync();
 
-// 新增日志
 async function mAddLog ({ log_type, ip, content }) {
-  const cRes = await MazeyLog.create({ log_type, ip, content }).catch(console.error);
+  const cRes = await MazeyLog.create({ log_type, ip, content }).catch(error => {
+    logger.error({ err: error }, "[log] log creation failed");
+  });
   if (cRes && cRes.dataValues) {
     return rsp({ message: "添加成功", data: cRes.dataValues });
   }
   return err({ message: "添加失败" });
 }
 
-// 查看内容是否存在
 async function mIsExistContent ({ content }) {
   const cRes = await MazeyLog.count({
     where: {
       content,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[log] content lookup failed");
+  });
   if (!isNumber(cRes)) {
     return err();
   }

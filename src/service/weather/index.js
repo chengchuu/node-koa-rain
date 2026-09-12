@@ -6,27 +6,17 @@ const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
 const { format } = require("date-fns");
 const { rsp } = require("../../entities/response");
 
-/**
- * @method sGetWeatherNow
- * @description 获取此时天气
- * */
 async function sGetWeatherNow () {}
 
-/**
- * @method sGetWeatherDaily
- * @description 获取当天天气
- * @param {String} location 地区 上海、北京等
- * @return {Object} 天气数据
- * */
 async function sGetWeatherDaily ({ location = "shanghai" } = {}) {
   const weatherInsRes = await weatherIns
     .getWeatherDaily(location)
     .then(function (data) {
-      // ctx.body = `getWeatherDaily(${JSON.stringify(data, null, 4)})`;
+
       return data;
     })
     .catch(function (err) {
-      // ctx.body = `getError(${err.error.status})`;
+
       sReportErrorInfo({ logType: "weather_error", err });
     });
   if (!weatherInsRes) {

@@ -1,21 +1,14 @@
-// 访客
+const logger = require("../entities/logger");
+
 const axios = require("axios");
 const { clone } = require("lodash");
 const { rsp } = require("../entities/response");
 const { queryVisitors } = require("../model/visitor");
 
-/**
- * @method getLatestVisitors
- * @desc 获取最近的访客信息
- */
 function getLatestVisitors () {
   return queryVisitors();
 }
 
-/**
- * @method sAgentGet
- * @desc 代理 GET 请求
- */
 async function sAgentGet (ctx) {
   const { url, key = "" } = ctx.query;
   if (key) {
@@ -27,14 +20,10 @@ async function sAgentGet (ctx) {
       return res.data;
     })
     .catch(err => {
-      console.error("err", err);
+      logger.error({ err: err }, "[visitor] proxy get failed");
     });
 }
 
-/**
- * @method sAgentPut
- * @desc 代理 PUT 请求
- */
 async function sAgentPut (ctx) {
   const { url, body, key = "" } = ctx.request.body;
   if (key) {
@@ -46,14 +35,10 @@ async function sAgentPut (ctx) {
       return res.data;
     })
     .catch(err => {
-      console.error("err", err);
+      logger.error({ err: err }, "[visitor] proxy put failed");
     });
 }
 
-/**
- * @method sAgentAny
- * @desc 代理任意请求
- */
 async function sAgentAny (ctx) {
   const { url, method, params, data, headers } = ctx.request.body;
   const { mockKey } = params;
@@ -68,18 +53,13 @@ async function sAgentAny (ctx) {
     headers,
   })
     .then(res => {
-      console.log("res", res);
       return res.data;
     })
     .catch(err => {
-      console.error("err", err);
+      logger.error({ err: err }, "[visitor] proxy request failed");
     });
 }
 
-/**
- * @method sShowRequestInfo
- * @desc 查看请求详情
- */
 async function sShowRequestInfo (ctx) {
   const pureReq = clone(ctx.request);
   return rsp({ data: pureReq });

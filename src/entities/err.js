@@ -1,4 +1,4 @@
-// 兼容旧引入
+// Preserve legacy import paths.
 const { err } = require("./error");
 
 module.exports = {

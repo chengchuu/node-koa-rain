@@ -3,7 +3,7 @@ const { rsp } = require("../../entities/response");
 const { addNewScore, queryAllScore } = require("../../model/game/score");
 const { queryUpdateGame, mUpdateGame } = require("../../model/game/game");
 const Joi = require("joi");
-// 增加游戏评分 (评分的时候需要对游戏表的分数进行处理)
+// Adding a rating also updates the game's aggregate score.
 async function sAddNewScore (ctx, { game_id, score, start, remark }) {
   const schema = Joi.object({
     game_id: Joi.number()
@@ -35,14 +35,13 @@ async function sAddNewScore (ctx, { game_id, score, start, remark }) {
     });
     if (addNewScoreRes.data) {
       let mUpdateGameRes = await mUpdateGame(queryGameRes, addNewScoreRes);
-      console.log("mUpdateGameRes", mUpdateGameRes);
     }
     return addNewScoreRes;
   } else {
     return queryGameRes;
   }
 }
-// 查询所有游戏
+
 async function sQueryAllScore (ctx, { game_id }) {
   const queryAllScoreRes = await queryAllScore({ game_id });
   return queryAllScoreRes;

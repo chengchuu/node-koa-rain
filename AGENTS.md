@@ -39,6 +39,9 @@ Keep changes parseable by Node.js 10. Do not introduce ESM, top-level `await`, o
 - `src/service/`: business orchestration, Joi validation, external calls, filesystem work, and notification side effects.
 - `src/model/`: Sequelize definitions and persistence helpers.
 - `src/entities/orm.js`: shared Sequelize/MySQL connection.
+- `src/entities/logger.js`: shared Pino logger, error serialization, redaction, and severity routing.
+- `scripts/`: focused FEPerf integration checks plus logger, pipe, integration, console-usage, and comment audits.
+- `guides/LOGGING_AND_COMMENTS_MODERNIZATION_PLAN.md`: implementation record for the completed logging and comment migration; the live code and this guide define current behavior.
 - `src/entities/jwt/`: token creation and path-based authentication middleware.
 - `src/entities/response/`: standard `rsp(...)` and `rspPage(...)` response envelopes.
 - `src/entities/error/`: standard `err(...)` error envelopes and error codes.
@@ -113,6 +116,25 @@ Treat client-supplied upload targets as filesystem input and validate them befor
 - Request logs and explicit `/server/log/*` operations persist through `src/service/log.js`.
 - `app.context.logContent` is a small process-local duplicate-suppression buffer.
 - App-level errors are passed to `sReportErrorInfo(...)`, which can notify robot integrations.
+- Application telemetry uses the shared logger separately from these database logs and robot messages.
+- Pino redaction applies only to application telemetry. Database log content and robot notification payloads follow separate paths and must not be assumed to be sanitized by the logger.
+
+### Application Logging And Comments
+
+- Import the shared instance from `src/entities/logger.js`; do not construct additional application loggers or call `console` directly.
+- Pino is pinned to `6.14.0` for Node.js 10. Use Node `v10.24.1` and npm `6.14.12` for dependency changes, and retain the npm 6 lockfile. Reassess this unmaintained Pino line when upgrading the runtime.
+- `LOG_LEVEL` defaults to `info` when absent and accepts standard Pino levels, including `silent`. Invalid configured values produce Pino's configuration error.
+- Use `debug` for safe diagnostics, `info` for meaningful completed operations, `warn` for recoverable degradation, and `error` for failed operations. Log completion only after it occurs.
+- Use stable English messages such as `[upload] speech file stored`. Put approved counts, durations, and status values in lower camel case fields, not in message strings.
+- Output is newline-delimited JSON. Levels below `error` go to stdout; `error` and `fatal` go to stderr exactly once. Synchronous writes preserve final records before exit for PM2 collection.
+- Output writes retain byte offsets across short writes and temporary `EAGAIN` failures. Synchronous backpressure can delay request handling while a collector is paused. `EPIPE` disables only the closed output; other I/O errors propagate.
+- Pass errors as `{ err: error }` with a fixed event message. The serializer keeps allowlisted types, `errorCode` values, numeric HTTP status values, and existing repository-relative application stack locations. It omits raw messages, stack headers, function names, absolute paths, and extra error properties.
+- Never pass secrets, verification codes, personal information, arbitrary content, configuration, Koa contexts, request/response objects, or credential-bearing URLs to telemetry. Configured redaction paths are a secondary safeguard, not a general string sanitizer. Sequelize SQL logging is disabled.
+- Preserve existing promise behavior: rejection handlers that previously swallowed errors must still return `undefined` after logging. Error-propagation fixes require separate review.
+- Standalone `scripts/` commands may use concise console output without credentials or database content. Vendored `src/utils/say/` code is excluded from migration. Console text embedded in runtime response strings remains unchanged; the static audit checks executable references.
+- Write repository-owned comments in American English. Explain intent, constraints, side effects, or non-obvious contracts; remove stale narration and commented-out code. Preserve runtime strings and vendored comments.
+- Use `// ` for short comments and punctuation for complete sentences. Keep route and schema labels concise. Use JSDoc only for useful contracts, with `@description`, `@param`, `@returns`, and lowercase primitive types.
+- Review retained log arguments manually as well as running the audits. Redaction tests do not prove arbitrary payloads are safe.
 
 ### FEPerf Monitoring
 
@@ -137,7 +159,7 @@ The JWT signing secret and several integration-style values are currently stored
 - Many model modules call `.sync()` during import. Starting the app, importing a router, or running an isolated script can therefore query or mutate the database schema.
 - Models below `src/model/feperf/` are an exception: they map the existing shared FEPerf tables without synchronizing schema.
 - Most model helpers return response envelopes directly, coupling persistence code to the HTTP response format.
-- Some legacy helpers use `.catch(console.error)`, which can turn database failures into later null/undefined behavior.
+- Some legacy helpers log rejected database operations and return `undefined`, which can turn database failures into later null/undefined behavior.
 
 Do not assume importing a model is side-effect free. Prefer explicit migrations for new production schema work rather than adding more import-time synchronization.
 
@@ -145,7 +167,9 @@ Do not assume importing a model is side-effect free. Prefer explicit migrations 
 
 `src/config/index.js` loads `src/config/env.${NODE_ENV}.js`, then derives `tinyBaseUrl` and `assetsBaseUrl`. Only `src/config/env.development.js` is checked in. `npm run start` sets `NODE_ENV=production`, so production requires an externally supplied `src/config/env.production.js` or an intentional configuration refactor.
 
-The checked-in development config contains placeholders for MySQL, JWT, weather, email, and robot integrations. It does not currently provide the `logistics` object expected by the card logistics service. The config loader also logs the loaded configuration object, so avoid placing secrets there without first removing or sanitizing that output.
+The checked-in development config contains placeholders for MySQL, JWT, weather, email, and robot integrations. It does not currently provide the `logistics` object expected by the card logistics service. The config loader does not log configuration values; do not reintroduce configuration dumps.
+
+`src/router/server.js` imports `alias2Key` directly from `src/config/env.development.js` for `/server/robot/send-text`, independently of `NODE_ENV`. Other configuration consumers normally load through `src/config/index.js`; account for this exception before changing production robot configuration.
 
 ## Commands And Tooling
 
@@ -156,10 +180,17 @@ The checked-in development config contains placeholders for MySQL, JWT, weather,
 - Foreground production-style PM2 run: `npm run start:nodaemon`
 - Stop/restart PM2: `npm run stop` / `npm run restart`
 - Lint and auto-fix: `npm run lint`
+- Read-only lint: `./node_modules/.bin/eslint src scripts/test-logger.js scripts/test-logger-pipes.js scripts/test-logging-integrations.js scripts/verify-logging.js scripts/verify-comments.js`
+- Logger output and redaction checks: `node scripts/test-logger.js`
+- Closed and paused output collector checks: `node scripts/test-logger-pipes.js`
+- Mocked logging integration checks: `node scripts/test-logging-integrations.js`
+- Application console and message audit: `node scripts/verify-logging.js`
+- Repository-owned comment audit: `node scripts/verify-comments.js`
+- Comment-only change verification: `node scripts/verify-comments.js --base <commit-before-comment-edits>` (compares executable tokens and AST)
 - FEPerf contract check: `NODE_ENV=development FEPERF_SCHEDULE_ENABLED=false node scripts/verify-feperf-contract.js`
 - FEPerf Node 10/MySQL 5.5 integration: `bash scripts/test-feperf-mysql55.sh`
 
-ESLint uses classic `.eslintrc.js` with `eslint@7.32.0` and `eslint-plugin-node@11.1.0`. Most formatting findings are warnings, and the lint command includes `--fix`, so it modifies files. The repository has no general automated test suite or `test` script; the FEPerf compatibility check is a read-only targeted harness.
+ESLint uses classic `.eslintrc.js` with `eslint@7.32.0` and `eslint-plugin-node@11.1.0`. Most formatting findings are warnings, and the lint command includes `--fix`, so it modifies files. The repository has no general `test` script; logging checks use isolated subprocesses and mocked integrations, and the FEPerf compatibility check is a read-only targeted harness. The comment audit checks tracked application files, excluding vendored code and external untracked configuration.
 
 The FEPerf integration script requires Docker and the NVM Node `v10.24.1` executable. It verifies the pinned `mazeyqian/web:mysql-5.5` image ID, `linux/amd64` platform, backup checksum, and production-config alignment before restoring the backup into a disposable container. It runs core API and schedule-cache checks, then removes its container, process, credentials file, and empty startup directories. Override its `FEPERF_TEST_*` variables only when intentionally testing different verified artifacts.
 
@@ -185,6 +216,7 @@ The webnode Docker image installs Rain and Server, then starts both from one PM2
 - `src/service/chat.js` is experimental: its upstream request and success response handling are not production-ready.
 - Speech export in `src/service/upload/index.js` relies on callback-based, platform-specific `say` backends; the current route can return before the output file exists.
 - The logistics endpoint cannot perform its intended lookup with the checked-in configuration.
+- `/server/robot/send-text` reads its robot alias from the development configuration even when Rain runs with `NODE_ENV=production`.
 - Process-local caches diverge across workers and reset on restart.
 - Import-time schema synchronization makes startup database-dependent and can create production schema side effects.
 - Several routes that read or mutate sensitive data remain public unless explicitly added to the JWT path list.

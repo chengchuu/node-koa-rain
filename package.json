@@ -40,6 +40,7 @@
     "nodemailer": "^6.9.1",
     "one-time": "0.0.4",
     "optimist": "^0.6.1",
+    "pino": "6.14.0",
     "request-promise": "^2.0.1",
     "sequelize": "^6.3.4"
   },

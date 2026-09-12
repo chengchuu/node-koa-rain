@@ -1,4 +1,5 @@
-// 机器人 通用方法
+const logger = require("../../entities/logger");
+
 const schedule = require("node-schedule");
 const axios = require("axios");
 const { isSameDay } = require("date-fns");
@@ -11,14 +12,14 @@ const { shuffle } = require("lodash");
 const weComRobotUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send";
 const feishuRobotUrl = "https://open.feishu.cn/open-apis/bot/v2/hook";
 
-// 机器人发送常规消息，type: info/绿色 comment/灰色 warning/黄色
+// Message colors: info is green, comment is gray, warning is yellow.
 function sRobotSendColorText({ type = "", message = "", messageFn = undefined, duration = "", key = "", immediately = false, isSkipDayOffDates = false } = {}) {
   const fn = async () => {
-    // 判断消息是否由函数生成
+
     if (messageFn) {
       message = await messageFn();
     }
-    // 判断是否在特殊休息日
+    // Honor configured days off when requested.
     if (isSkipDayOffDates) {
       const isDayOffDatesRes = isDayOffDates();
       if (isDayOffDatesRes.info === "yes") {
@@ -36,21 +37,19 @@ function sRobotSendColorText({ type = "", message = "", messageFn = undefined, d
           content,
         },
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[robot] colored message delivery failed");
+      });
   };
   if (immediately) {
     return fn();
   } else if (duration) {
-    // https://www.npmjs.com/package/node-schedule
+
     const job = schedule.scheduleJob(duration, fn);
     return job;
   }
 }
 
-/**
- * @method isDayOffDates
- * @desc 判断是否在特殊休息日
- */
 function isDayOffDates() {
   const n = new Date();
   if (dayOffDates.some(dateStr => isSameDay(new Date(dateStr), n))) {
@@ -59,10 +58,6 @@ function isDayOffDates() {
   return rsp({ info: "no" });
 }
 
-/**
- * @method sGetRobotKeyByAlias
- * @desc 根据别名查找企业微信机器人的 Key 值
- */
 function sGetRobotKeyByAlias({ alias = "" } = {}) {
   if (!alias) {
     return err({ message: "别名不能为空" });
@@ -77,24 +72,20 @@ function sGetRobotKeyByAlias({ alias = "" } = {}) {
 }
 
 /**
- * @method sCommonRobotSend
- * @desc 通用的机器人发送接口
- * @param {String} target 软件类型
- * workweixin 企业微信
- * feishu 飞书
- * @param {String} alias Key 对应的别名
- * @param {String} type 消息类型
- * 企业微信 text/markdown/image/news/file
- * 飞书 text/post
- * @param {Object} data 消息内容
- * @param {Function} dataFn 生成消息内容的方法
- * @param {String} duration Crontab 定时规则
- * @param {Boolean} immediately 是否立即发送
- * @param {Boolean} isSkipDayOffDates 是否跳过特殊休息日，例如：节假日、调休
- * @return {Promise/Object} 结果
+ * @description Send immediately or schedule a WeCom or Feishu message.
+ * @param {object} options - Delivery and scheduling options.
+ * @param {string} options.target - workweixin or feishu.
+ * @param {string} options.alias - Configured robot key alias.
+ * @param {string} options.type - Provider message type.
+ * @param {object|string} options.data - Message content.
+ * @param {function} [options.dataFn] - Function that supplies message content.
+ * @param {string} [options.duration] - Cron expression.
+ * @param {boolean} [options.immediately] - Send immediately instead of scheduling.
+ * @param {boolean} [options.isSkipDayOffDates] - Skip configured days off.
+ * @returns {Promise<object|undefined>|object|undefined} Delivery promise, scheduled job, or no action.
  */
 function sCommonRobotSend({ target = "workweixin", alias = "", type = "", data = {}, dataFn = undefined, duration = "", immediately = false, isSkipDayOffDates = false } = {}) {
-  // `[飞书消息去重防吞: ${}]`
+
   const feishuNot = () => {
     const r = generateRndNum(7);
     const iii = generateRndNum(1);
@@ -111,7 +102,7 @@ function sCommonRobotSend({ target = "workweixin", alias = "", type = "", data =
       "快乐生活",
       "飞书消息去重防吞",
       "我爱工作可是工作爱我吗",
-      // 'TODAY IS PRESENT',
+
       "消息重复飞书就拦截",
       "虚虚实实就是工作",
       "人生是死亡预备期工作是过程",
@@ -143,18 +134,18 @@ function sCommonRobotSend({ target = "workweixin", alias = "", type = "", data =
     return `[${prefix}: ${r}]`;
   };
   const fn = async () => {
-    // 判断消息是否由函数生成
+
     if (dataFn) {
       data = await dataFn();
     }
-    // 判断是否在特殊休息日
+    // Honor configured days off when requested.
     if (isSkipDayOffDates) {
       const isDayOffDatesRes = isDayOffDates();
       if (isDayOffDatesRes.info === "yes") {
         return isDayOffDatesRes;
       }
     }
-    // 查询 Key
+
     const GetRobotKeyByAliasRes = sGetRobotKeyByAlias({ alias });
     if (GetRobotKeyByAliasRes.ret !== 0) {
       return GetRobotKeyByAliasRes;
@@ -169,11 +160,7 @@ function sCommonRobotSend({ target = "workweixin", alias = "", type = "", data =
         postData = {
           msgtype: type,
           [type]: data,
-          // text: {},
-          // markdown: {},
-          // image: {},
-          // news: {},
-          // file: {},
+
         };
         break;
       case "feishu":
@@ -207,19 +194,19 @@ function sCommonRobotSend({ target = "workweixin", alias = "", type = "", data =
       default:
         url = "";
     }
-    console.log("sCommonRobotSend url", url);
-    return axios.post(url, postData).catch(console.error);
+    return axios.post(url, postData).catch(error => {
+      logger.error({ err: error }, "[robot] message delivery failed");
+    });
   };
   if (immediately) {
     return fn();
   } else if (duration) {
-    // https://www.npmjs.com/package/node-schedule
+
     const job = schedule.scheduleJob(duration, fn);
     return job;
   }
 }
 
-// 提醒和白开水
 function sRobotRemindForLowSugarFruits({ duration = "", alias = "", immediately = false, isSkipDayOffDates = false } = {}) {
   return sCommonRobotSend({
     alias,

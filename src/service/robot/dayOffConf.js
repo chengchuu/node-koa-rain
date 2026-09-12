@@ -1,4 +1,4 @@
-// Dayoff
+// Days off
 const dayOffDates = [
   "2022-01-30",
   "2022-01-31",

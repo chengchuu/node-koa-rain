@@ -1,4 +1,4 @@
-// 图片类型内容
+// Image messages
 const robotImages = {
   "ex-ample": {
     base64: "",
@@ -36,42 +36,42 @@ const robotImages = {
     base64: "",
     md5: "",
   },
-  // 今天周一
+  // Monday
   "today-1": {
     base64: "",
     md5: "",
   },
-  // 今天周二
+  // Tuesday
   "today-2": {
     base64: "",
     md5: "",
   },
-  // 今天周三
+  // Wednesday
   "today-3": {
     base64: "",
     md5: "",
   },
-  // 今天周四
+  // Thursday
   "today-4": {
     base64: "",
     md5: "",
   },
-  // 今天周五
+  // Friday
   "today-5": {
     base64: "",
     md5: "",
   },
-  // 今天周六
+  // Saturday
   "today-6": {
     base64: "",
     md5: "",
   },
-  // 今天周日
+  // Sunday
   "today-7": {
     base64: "",
     md5: "",
   },
-  // 喝水
+  // Hydration
   "drink-water-panda-head": {
     base64: "",
     md5: "",

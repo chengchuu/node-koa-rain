@@ -8,6 +8,4 @@ Object.assign(envConfig, {
   assetsBaseUrl: "https://i.mazey.net",
 });
 
-console.log("envConfig", envConfig);
-
 module.exports = envConfig;

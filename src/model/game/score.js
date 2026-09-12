@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes, Op } = require("sequelize");
 const { rsp } = require("../../entities/response");
@@ -6,35 +7,35 @@ const MazeyScore = sqlIns.define(
   "MazeyScore",
   {
     score_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     user_id: {
-      // 用户 ID
+      // User ID
       type: DataTypes.INTEGER,
     },
     user_name: {
       type: DataTypes.STRING(20),
     },
     game_id: {
-      // 游戏id
+      // Game ID
       type: DataTypes.INTEGER,
     },
     game_name: {
       type: DataTypes.STRING(50),
     },
     start: {
-      // 1-5星支持小数0.5的倍数
+      // Stars: 1-5 in increments of 0.5
       type: DataTypes.FLOAT,
     },
     score: {
-      // 评分1-10分保留一位小数
+      // Score: 1-10 with one decimal place
       type: DataTypes.FLOAT,
     },
     remark: {
-      // 备注
+      // Notes
       type: DataTypes.STRING(300),
     },
     content: {
@@ -58,19 +59,23 @@ async function addNewScore ({ game_id, game_name, score, start, remark, user_id,
     remark,
     user_id,
     user_name,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[game] rating creation failed");
+  });
   if (ret && ret.dataValues) {
     return rsp({ data: ret.dataValues });
   }
   return err();
 }
-// 根据游戏查询游戏下的所有评分
+
 async function queryAllScore ({ game_id }) {
   const ret = await MazeyScore.findAll({
     where: {
       game_id,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[game] rating lookup failed");
+  });
   return rsp({ data: ret });
 }
 module.exports = {

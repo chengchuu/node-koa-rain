@@ -35,9 +35,9 @@ const { sAddNewTags, sIsAddNewTags } = require("../service/game/tag");
 const { sGetChatInfo } = require("../service/chat");
 const { sUploadCard, sBatchAddCrab, sGetCardByNumber, sAddAddressByNumber, sUpdateCardByAddressNumber, sGetAddressByNumber, sGetCrabByNumber, sGetAddressInfo } = require("../service/card/card");
 const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
-// 校验
+
 server
-  // Ping (非登录接口)
+  // Public health check
   .get("/ping", async ctx => {
     ctx.body = "ok";
   })
@@ -57,7 +57,7 @@ server
   .get("/user/info", async ctx => {
     ctx.body = await sGetUserInfo(ctx);
   })
-  // code
+  // Verification codes
   .post("/code/check-code", async ctx => {
     const { user_email, code } = ctx.request.body;
     ctx.body = await sUpdateCodeStatus(ctx, user_email, code);
@@ -144,7 +144,7 @@ server
   .get("/query-visitors", async ctx => {
     ctx.body = await getLatestVisitors();
   })
-  // Upload (需登录接口)
+  // Uploads; authentication depends on the JWT path list.
   .post("/upload", async ctx => {
     ctx.body = await upload(ctx);
   })
@@ -221,14 +221,14 @@ server
   .get("/nut/get-achivement", async ctx => {
     ctx.body = await sGetRecentAchievement({ nickName: ctx.query.nick_name });
   })
-  // Wechat
+  // WeChat
   .get("/weixin/get-token", async ctx => {
     ctx.body = await sGetToken();
   })
   .get("/weixin/get-ticket", async ctx => {
     ctx.body = await sGetTicket();
   })
-  // score
+  // Scores
   .post("/game/add", async ctx => {
     const obj = ctx.request.body;
     ctx.body = await sAddNewGame(ctx, { ...obj });
@@ -256,50 +256,50 @@ server
     const { user_id, user_name, game_id, tag_name, tag_status } = ctx.query;
     ctx.body = await sAddNewTags(ctx, { user_id, user_name, game_id, tag_name, tag_status });
   })
-  // 测试gpt
+  // Experimental chat
   .post("/chat", async ctx => {
     const { messages } = ctx.request.body;
     ctx.body = await sGetChatInfo(ctx, { messages });
   })
-  // 文字转语音
+  // Speech synthesis
   .post("/synthesize", async ctx => {
     const { content } = ctx.request.body;
     ctx.body = await sSynthesize(ctx, { content });
   })
-  // 批量增加提货卡数据(表格导入)
+  // Card spreadsheet imports
   .post("/card/batch-add", async ctx => {
     ctx.body = await sUploadCard(ctx);
   })
-  // 批量增加货物信息(表格导入)
+  // Product spreadsheet imports
   .post("/card/batch-add-crab", async ctx => {
     ctx.body = await sBatchAddCrab(ctx);
   })
-  // 通过卡号和密码判断有没有该提货卡
+  // Card credential checks
   .post("/card/get-number", async ctx => {
     const { card_number, card_password } = ctx.request.body;
     ctx.body = await sGetCardByNumber({ card_number, card_password });
   })
-  // 给某个卡号增加发货地址
+  // Card shipping address creation
   .post("/card/add-address", async ctx => {
     const { card_number, card_password, address_detail, address_user, address_mobile, address_date } = ctx.request.body;
     ctx.body = await sAddAddressByNumber({ card_number, card_password, address_detail, address_user, address_mobile, address_date });
   })
-  // 获取某卡号的收货地址
+  // Card shipping address lookup
   .post("/card/get-address", async ctx => {
     const { card_number, card_password } = ctx.request.body;
     ctx.body = await sGetAddressByNumber({ card_number, card_password });
   })
-  // 给某卡号地址增加快递单号
+  // Tracking number updates
   .post("/card/update-address", async ctx => {
     const { address_id, address_category, address_number } = ctx.request.body;
     ctx.body = await sUpdateCardByAddressNumber({ address_id, address_category, address_number });
   })
-  // 获取卡的详情
+  // Card details
   .post("/card/get-crab", async ctx => {
     const { card_number, card_password } = ctx.request.body;
     ctx.body = await sGetCrabByNumber({ card_number, card_password });
   })
-  // 获取物流信息
+  // Logistics lookup
   .post("/card/get-logistics", async ctx => {
     const { order_number } = ctx.request.body;
     ctx.body = await sGetAddressInfo({ order_number });

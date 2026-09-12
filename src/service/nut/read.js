@@ -1,3 +1,4 @@
+const logger = require("../../entities/logger");
 // Read
 const { err } = require("../../entities/err");
 const { mAddCard, mGetCards, mUpdateCard, mGetRecentCard, mGetCardIntegral, mToggleLikes, mGetRecentAchievement } = require("../../model/nut/read");
@@ -10,12 +11,12 @@ const { sRobotSendNews } = require("../robot/robot");
 const { sAddNewUser } = require("../user");
 const { sRobotSendColorText } = require("../robot");
 
-// Punchs
+// Reading check-ins
 async function sPunchCard (ctx) {
   const { book_name, nick_name, real_name, content, imgs, read_card_type, read_card_status, status_0_tip } = ctx.request.body;
-  // Add user(Async).
+  // Start user creation without waiting for completion.
   sAddNewUser(ctx, nick_name, real_name);
-  // Add data.
+
   const read_card_date = format(Date.now(), "yyyy-MM-dd");
   // Check failed images.
   if (imgs.length) {
@@ -74,7 +75,9 @@ async function sPunchCard (ctx) {
         });
       }
     })
-    .catch(console.error);
+    .catch(error => {
+      logger.error({ err: error }, "[reading] card notification failed");
+    });
   return mAddCardRes;
 }
 
@@ -98,7 +101,6 @@ async function sGetFeeds (ctx) {
   return mGetCardsRes;
 }
 
-// Update
 async function sUpdateCard (ctx) {
   const { read_card_id, accumulative_count, max_continuous_count } = ctx.request.body;
   return mUpdateCard({ read_card_id, accumulative_count, max_continuous_count });
@@ -126,7 +128,6 @@ async function sGetWikis (ctx) {
 
 // Get all notes.
 async function sGetAllWikis (ctx) {
-  console.log("_ ctx", ctx);
   const mGetWikisRes = await mGetAllWikis();
   if (mGetWikisRes.ret !== 0) {
     return mGetWikisRes;
@@ -177,7 +178,7 @@ async function sGetRecentCard (ctx) {
   return RecentCardRes;
 }
 
-// Calculate the integral of cards.
+// Calculate reading-card points.
 async function sGetCardIntegral (ctx) {
   const { nick_name } = ctx.query;
   const CardIntegralRes = await mGetCardIntegral({ nick_name });
@@ -187,7 +188,7 @@ async function sGetCardIntegral (ctx) {
   return CardIntegralRes;
 }
 
-// Calculate the integral of notes.
+// Calculate reading-note points.
 async function sGetWikiIntegral (ctx) {
   const { nick_name } = ctx.query;
   const WikiIntegralRes = await mGetWikiIntegral({ nick_name });

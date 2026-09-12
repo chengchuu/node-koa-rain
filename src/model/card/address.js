@@ -1,4 +1,5 @@
-// 卡号 密码 状态(0, 1)
+const logger = require("../../entities/logger");
+
 const { sqlIns } = require("../../entities/orm");
 const { DataTypes } = require("sequelize");
 const { rsp } = require("../../entities/response");
@@ -7,7 +8,7 @@ const MazeyAddress = sqlIns.define(
   "MazeyAddress",
   {
     address_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -34,17 +35,17 @@ const MazeyAddress = sqlIns.define(
       type: DataTypes.STRING(50),
     },
     address_number: {
-      // 快递单号
+      // Tracking number
       type: DataTypes.STRING(50),
     },
-    // 京东 顺丰
+    // Carrier: JD or SF Express
     address_category: {
       type: DataTypes.STRING(50),
     },
     address_date: {
       type: DataTypes.STRING(50),
     },
-    // 存一下卡号
+    // Card number
     card_number: {
       type: DataTypes.STRING(50),
     },
@@ -61,7 +62,9 @@ async function mGetAddressByNumber({ card_number }) {
       card_number,
     },
     through: { attributes: [] },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[card] address lookup failed");
+  });
   if (!ret) {
     return err({ message: "该卡号没有地址" });
   }
@@ -74,13 +77,15 @@ async function mAddAddressByNumber({ card_number, address_detail, address_user, 
     address_user,
     address_mobile,
     address_date,
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[card] address creation failed");
+  });
   if (ret && ret.dataValues) {
     return rsp({ data: ret.dataValues });
   }
   return err();
 }
-// 修改地址或者填写单号
+
 async function mUpdateAddress({ card_number, address_id, address_detail, address_user, address_mobile, address_date, address_category, address_number }) {
   let ret = "";
   if (address_number) {
@@ -94,7 +99,9 @@ async function mUpdateAddress({ card_number, address_id, address_detail, address
           address_id,
         },
       },
-    ).catch(console.error);
+    ).catch(error => {
+      logger.error({ err: error }, "[card] address update failed");
+    });
     if (!Array.isArray(ret) || ret[0] === 0) {
       return err({ message: "该卡号不存在" });
     }
@@ -112,8 +119,9 @@ async function mUpdateAddress({ card_number, address_id, address_detail, address
           address_id,
         },
       },
-    ).catch(console.error);
-    console.log("ret", ret);
+    ).catch(error => {
+      logger.error({ err: error }, "[card] address update failed");
+    });
     if (Array.isArray(ret) && ret[0] > 0) {
       return rsp({ data: { affectedRows: ret[0] } });
     }

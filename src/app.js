@@ -1,3 +1,4 @@
+const logger = require("./entities/logger");
 const Koa = require("koa");
 const Router = require("koa-router");
 const koaBody = require("koa-body");
@@ -10,17 +11,17 @@ let schedule = require("node-schedule");
 const { sReportErrorInfo, sAddLog } = require("./service/log");
 const { authMiddleware } = require("./entities/jwt/index");
 const { startFeperfSchedules } = require("./schedule/feperf");
-// 实例
+
 const app = new Koa();
 const router = new Router();
-// 创建 temp
+
 mkdir.mkdirs("temp", err => {
-  console.log("mkdirs temp err", err);
+  if (err instanceof Error) logger.error({ err }, "[app] directory creation failed");
 });
 mkdir.mkdirs("video", err => {
-  console.log("mkdirs video err", err);
+  if (err instanceof Error) logger.error({ err }, "[app] directory creation failed");
 });
-// 请求日志
+// Persist request logs independently of the response.
 app.use(async (ctx, next) => {
   const reqPath = ctx.path;
   if (reqPath !== "/server/log/add" && reqPath !== "/feperf/ping") {
@@ -29,14 +30,14 @@ app.use(async (ctx, next) => {
   await next();
 });
 app.use(authMiddleware);
-// 上传文件
+
 app.use(
   koaBody({
     multipart: true,
     formidable: {
-      uploadDir: path.join(__dirname, "./temp/"), // temp
+      uploadDir: path.join(__dirname, "./temp/"),
       keepExtensions: true,
-      maxFileSize: 200 * 1024 * 1024, // 设置上传文件大小最大限制，200M
+      maxFileSize: 200 * 1024 * 1024,
     },
   }),
 );
@@ -45,16 +46,18 @@ app.context.logContent = [];
 const JOB = schedule.scheduleJob("*/60 * * * *", () => {
   app.context.linkMap = new Map();
 });
-// 装载所有路由并且分类
+
 router.use("/server", server.routes(), server.allowedMethods());
 router.use("/t", tiny.routes(), tiny.allowedMethods());
 router.use("/feperf", feperf.routes(), feperf.allowedMethods());
 app.use(router.routes()).use(router.allowedMethods());
 startFeperfSchedules();
-// 错误监控
+
 app.on("error", async (err, ctx) => {
-  console.error("Server Error:", err);
+  logger.error({ err: err }, "[app] request handling failed");
   sReportErrorInfo({ ctx, logType: "server_error", err, url: "", alias: "pigKey" });
 });
-// 监听端口
-app.listen(3224);
+
+app.listen(3224, () => {
+  logger.info({ port: 3224 }, "[app] server listening");
+});

@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { sqlIns } = require("../entities/orm");
 const { DataTypes, Op } = require("sequelize");
 const { rsp } = require("../entities/response");
@@ -8,32 +9,32 @@ const MazeyCode = sqlIns.define(
   "MazeyCode",
   {
     code_id: {
-      // 自增 ID
+      // Auto-increment ID
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     user_id: {
-      // 用户 ID
+      // User ID
       type: DataTypes.INTEGER,
     },
     user_name: {
-      // 姓名
+      // Name
       type: DataTypes.STRING(20),
     },
     code_type: {
-      // 验证码类型
+      // Verification code type
       type: DataTypes.STRING(20),
     },
     user_email: {
       type: DataTypes.STRING(50),
     },
     verify_status: {
-      // 校验状态-1, 0,1,2 0未校验 1校验完成 2校验中 -1已失效
+      // Verification status: 0 unchecked, 1 complete, 2 in progress, -1 expired
       type: DataTypes.INTEGER,
     },
     code: {
-      // code内容
+      // Verification code
       type: DataTypes.STRING(10),
     },
   },
@@ -45,9 +46,8 @@ const MazeyCode = sqlIns.define(
 );
 
 MazeyCode.sync();
-// code数据
+
 async function acquireNewCode ({ user_id, user_name, code_type, user_email, verify_status = 0, code }) {
-  console.log("code", code);
   const amount = await MazeyCode.count({
     where: {
       user_email,
@@ -61,7 +61,9 @@ async function acquireNewCode ({ user_id, user_name, code_type, user_email, veri
       user_email,
       verify_status,
       code,
-    }).catch(console.error);
+    }).catch(error => {
+      logger.error({ err: error }, "[code] verification code creation failed");
+    });
     if (ret && ret.dataValues) {
       return rsp({ data: ret.dataValues });
     }
@@ -69,7 +71,7 @@ async function acquireNewCode ({ user_id, user_name, code_type, user_email, veri
   }
   return rsp({ message: "该邮箱已绑定" });
 }
-// 验证码过期生产新code数据
+// Replace an expired verification code.
 async function acquireNotExpireCode ({ user_email, old_code, new_code }) {
   const cRes = await MazeyCode.findOne({
     where: {
@@ -84,7 +86,9 @@ async function acquireNotExpireCode ({ user_email, old_code, new_code }) {
       user_email: user_email,
       verify_status: 0,
       code: new_code,
-    }).catch(console.error);
+    }).catch(error => {
+      logger.error({ err: error }, "[code] verification code renewal failed");
+    });
     if (ret && ret.dataValues) {
       return rsp({ data: ret.dataValues });
     }
@@ -92,19 +96,19 @@ async function acquireNotExpireCode ({ user_email, old_code, new_code }) {
   }
   return rsp({ message: "该失效邮箱不存在" });
 }
-// 更新邮箱状态
+
 async function updateCodeStatus ({ user_email, code }) {
   const cRes = await MazeyCode.findOne({
     where: {
       [Op.and]: [ { user_email: user_email }, { code: code }, { verify_status: 0 } ],
     },
-  }).catch(console.error);
-  console.log("cRes", cRes);
+  }).catch(error => {
+    logger.error({ err: error }, "[code] verification status update failed");
+  });
   if (!cRes) {
     return err({ message: "该邮箱已校验完成或未进行注册" });
   }
-  console.log("cRes", cRes);
-  // 判断code过期没
+
   let creat_time = Number(new Date(cRes.dataValues.create_at));
   let now_time = Number(new Date());
   if (now_time > creat_time + 15 * 60 * 1000) {
@@ -112,24 +116,30 @@ async function updateCodeStatus ({ user_email, code }) {
       .update({
         verify_status: -1,
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[code] verification status update failed");
+      });
     return err({ message: "验证码已过期, 已重新发送验证码", data: { expire: true } });
   } else {
     const ret = await cRes
       .update({
         verify_status: 1,
       })
-      .catch(console.error);
+      .catch(error => {
+        logger.error({ err: error }, "[code] verification status update failed");
+      });
   }
   return err();
 }
-// 查看内容是否存在
+
 async function mIsExistContent ({ user_email }) {
   const cRes = await MazeyCode.count({
     where: {
       user_email,
     },
-  }).catch(console.error);
+  }).catch(error => {
+    logger.error({ err: error }, "[code] content lookup failed");
+  });
   if (!isNumber(cRes)) {
     return err();
   }

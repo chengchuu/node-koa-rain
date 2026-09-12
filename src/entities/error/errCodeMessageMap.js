@@ -1,7 +1,7 @@
 const errCodeMessageMap = new Map([
   [ "err_uid_params_error", "UID 参数错误" ],
   [ "err_not_find", "UID 不存在" ],
-  // 腾讯云 公共错误码
+  // Tencent Cloud common error codes
   [ "UnsupportedOperation", "操作不支持。" ],
   [ "ResourceInUse", "资源被占用。" ],
   [ "InternalError", "内部错误。" ],

@@ -1,3 +1,4 @@
+const logger = require("../entities/logger");
 const { refreshTopicsCache, aggregateCurrentTopics } = require("../service/feperf");
 
 const INTERVAL = 30 * 60 * 1000;
@@ -5,7 +6,7 @@ let started = false;
 let aggregationRunning = false;
 
 function reportScheduleError(error) {
-  console.error("FEPerf schedule error:", error);
+  logger.error({ err: error }, "[feperf] scheduled job failed");
 }
 
 async function runAggregation() {
@@ -15,6 +16,7 @@ async function runAggregation() {
   aggregationRunning = true;
   try {
     await aggregateCurrentTopics();
+    logger.info("[feperf] aggregation completed");
   } catch (error) {
     reportScheduleError(error);
   } finally {
@@ -28,10 +30,14 @@ function startFeperfSchedules() {
   }
   started = true;
 
-  refreshTopicsCache().catch(reportScheduleError);
+  refreshTopicsCache().then(() => {
+    logger.info("[feperf] topic cache refreshed");
+  }).catch(reportScheduleError);
 
   const topicsTimer = setInterval(() => {
-    refreshTopicsCache().catch(reportScheduleError);
+    refreshTopicsCache().then(() => {
+      logger.info("[feperf] topic cache refreshed");
+    }).catch(reportScheduleError);
   }, INTERVAL);
   const aggregationTimer = setInterval(() => {
     runAggregation();
