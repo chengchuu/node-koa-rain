@@ -1,30 +1,13 @@
 const logger = require("../entities/logger");
 
-const axios = require("axios");
 const { saveIPInfo } = require("../model/visitor");
 const WeatherApi = require("./weather/weather");
 const { WeatherConf } = require("../config/index");
 const weatherIns = new WeatherApi(WeatherConf.UID, WeatherConf.KEY);
 const { format } = require("date-fns");
 
-async function getCityInfo ({ ip, referrermz, hrefmz, titlemz, visitor_fingerprint }) {
-  let ret = null;
-  let ipResult = null;
-  try {
-    ipResult = await axios.get("http://saip.market.alicloudapi.com/ip", {
-      params: {
-        ip,
-      },
-      headers: {
-        Authorization: "APPCODE #rabbit",
-      },
-    });
-  } catch (error) {
-    logger.error({ err: error }, "[ip] location lookup failed");
-  }
-  if (ipResult && ipResult.status && ipResult.status === 200) {
-    ret = ipResult.data;
-  }
+async function getCityInfo({ ip, referrermz, hrefmz, titlemz, visitor_fingerprint }) {
+  const ret = null;
   let showapi_res_body = {};
   if (ret) {
     showapi_res_body = ret.showapi_res_body || {};
@@ -37,7 +20,7 @@ async function getCityInfo ({ ip, referrermz, hrefmz, titlemz, visitor_fingerpri
     try {
       ({
         results: [ { daily } ],
-      } = await weatherIns.getWeatherDaily(location).then(function (data) {
+      } = await weatherIns.getWeatherDaily(location).then(function(data) {
         return data;
       }));
     } catch (error) {
@@ -75,7 +58,7 @@ async function getCityInfo ({ ip, referrermz, hrefmz, titlemz, visitor_fingerpri
  * @param {object} req - Request with headers and connection details.
  * @returns {string} Forwarded header or connection address.
  */
-function getClientIP (req) {
+function getClientIP(req) {
   return (
     req.headers["x-forwarded-for"] || // Prefer the forwarded address when a reverse proxy supplies it.
     req.connection.remoteAddress ||
