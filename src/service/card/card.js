@@ -14,7 +14,7 @@ let querystring = require("querystring");
 const uuid = require("uuid");
 const { logistics } = require("../../config/env.development");
 
-async function sCheckCardAccess ({ card_number, card_password }) {
+async function sCheckCardAccess({ card_number, card_password }) {
   const schema = Joi.object({
     card_number: Joi.string()
       .required()
@@ -33,7 +33,7 @@ async function sCheckCardAccess ({ card_number, card_password }) {
   return mCheckCardByNumber({ card_number, card_password });
 }
 
-async function sUploadCard (ctx) {
+async function sUploadCard(ctx) {
   const file = ctx.request.files.file; // 获取上传文件
   const filePath = file.path;
   // 创建一个新的工作簿对象
@@ -54,17 +54,13 @@ async function sUploadCard (ctx) {
         crab_id: row.getCell(3).value,
       });
     }
-    // row.eachCell((cell, colNumber) => {
-    //   console.log('cell', colNumber, cell._value.model);
-    // });
-    // 将每一行的数据存储到数组中
   });
   console.log("data", data);
   // 批量导入数据
   const mBatchAddCardRes = await mBatchAddCard(data);
   return mBatchAddCardRes;
 }
-async function sBatchAddCrab (ctx) {
+async function sBatchAddCrab(ctx) {
   const file = ctx.request.files.file; // 获取上传文件
   const filePath = file.path;
   // 创建一个新的工作簿对象
@@ -91,10 +87,10 @@ async function sBatchAddCrab (ctx) {
   const mBatchAddCrabRes = await mBatchAddCrab(data);
   return mBatchAddCrabRes;
 }
-async function sGetCardByNumber ({ card_number, card_password }) {
+async function sGetCardByNumber({ card_number, card_password }) {
   return sCheckCardAccess({ card_number, card_password });
 }
-async function sGetCrabByNumber ({ card_number, card_password }) {
+async function sGetCrabByNumber({ card_number, card_password }) {
   const CheckCardAccessRes = await sCheckCardAccess({ card_number, card_password });
   if (CheckCardAccessRes.ret !== 0) {
     return CheckCardAccessRes;
@@ -113,7 +109,7 @@ async function sGetCrabByNumber ({ card_number, card_password }) {
   const mGetCrabByNumberRes = await mGetCardByNumber({ card_number });
   return mGetCrabByNumberRes;
 }
-async function sAddAddressByNumber ({ card_number, card_password, address_id, address_detail, address_user, address_mobile, address_date }) {
+async function sAddAddressByNumber({ card_number, card_password, address_id, address_detail, address_user, address_mobile, address_date }) {
   console.log("address_detail", card_number, address_detail, address_user, address_mobile, address_date);
   const schema = Joi.object({
     card_number: Joi.string()
@@ -183,7 +179,7 @@ async function sAddAddressByNumber ({ card_number, card_password, address_id, ad
   }
   return err({ message: "失败" });
 }
-async function sUpdateCardByAddressNumber ({ address_id, address_category, address_number }) {
+async function sUpdateCardByAddressNumber({ address_id, address_category, address_number }) {
   // 填入单号的同时修改卡为已使用
   const UpdateAddressRes = await mUpdateAddress({ address_id, address_category, address_number });
   if (UpdateAddressRes.ret !== 0) {
@@ -192,7 +188,7 @@ async function sUpdateCardByAddressNumber ({ address_id, address_category, addre
   const sUpdateCardByAddressRes = await mUpdateCardByAddress({ address_id });
   return sUpdateCardByAddressRes;
 }
-async function sGetAddressByNumber ({ card_number, card_password }) {
+async function sGetAddressByNumber({ card_number, card_password }) {
   const CheckCardAccessRes = await sCheckCardAccess({ card_number, card_password });
   if (CheckCardAccessRes.ret !== 0) {
     return CheckCardAccessRes;
@@ -202,7 +198,7 @@ async function sGetAddressByNumber ({ card_number, card_password }) {
   return mGetAddressByNumberRes;
 }
 
-async function sGetAddressInfo ({ order_number }) {
+async function sGetAddressInfo({ order_number }) {
   // 需要根据卡号查一下快递单号吗?
   if (!logistics || !logistics.partnerID || !logistics.sandboxCode) {
     return err({ message: "缺少物流配置" });

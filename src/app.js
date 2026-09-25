@@ -4,24 +4,26 @@ const koaBody = require("koa-body");
 const path = require("path");
 const server = require("./router/server");
 const tiny = require("./router/tiny");
+const feperf = require("./router/feperf");
 const mkdir = require("./utils/mkdir");
 let schedule = require("node-schedule");
 const { sReportErrorInfo, sAddLog } = require("./service/log");
 const { authMiddleware } = require("./entities/jwt/index");
+const { startFeperfSchedules } = require("./schedule/feperf");
 // 实例
 const app = new Koa();
 const router = new Router();
 // 创建 temp
 mkdir.mkdirs("temp", err => {
-  console.log("mkdirs temp err", err); // 错误的话，直接打印如果地址跟
+  console.log("mkdirs temp err", err);
 });
 mkdir.mkdirs("video", err => {
-  console.log("mkdirs video err", err); // 错误的话，直接打印如果地址跟
+  console.log("mkdirs video err", err);
 });
 // 请求日志
 app.use(async (ctx, next) => {
   const reqPath = ctx.path;
-  if (reqPath !== "/server/log/add") {
+  if (reqPath !== "/server/log/add" && reqPath !== "/feperf/ping") {
     sAddLog({ ctx, logType: "request", content: `Rain ${ctx.method} ${reqPath}` });
   }
   await next();
@@ -46,7 +48,9 @@ const JOB = schedule.scheduleJob("*/60 * * * *", () => {
 // 装载所有路由并且分类
 router.use("/server", server.routes(), server.allowedMethods());
 router.use("/t", tiny.routes(), tiny.allowedMethods());
+router.use("/feperf", feperf.routes(), feperf.allowedMethods());
 app.use(router.routes()).use(router.allowedMethods());
+startFeperfSchedules();
 // 错误监控
 app.on("error", async (err, ctx) => {
   console.error("Server Error:", err);

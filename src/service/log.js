@@ -5,7 +5,7 @@ const { sRobotSendColorText, sGetRobotKeyByAlias } = require("./robot/index.js")
 const { sGetIP } = require("./user");
 
 // 新增日志 - 使用驼峰，遗弃下划线 log_type
-async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
+async function sAddLog({ ctx, logType, content, log_type, isEncode = false }) {
   const tempType = logType || log_type;
   if (typeof content === "object") {
     content = JSON.stringify(content);
@@ -24,7 +24,7 @@ async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
       data: { ip },
     } = await sGetIP(ctx));
   }
-  console.log("sAddLog, 新增日志:", { tempType, content, ip, isEncode });
+  console.log("sAddLog:", { tempType, content, ip, isEncode });
   const AddLogRes = await mAddLog({ log_type: tempType, ip, content });
   if (AddLogRes.ret === 0) {
     if (isEncode) {
@@ -36,7 +36,7 @@ async function sAddLog ({ ctx, logType, content, log_type, isEncode }) {
 }
 
 // 内容是否存在
-async function sIsExistContent ({ ctx, content }) {
+async function sIsExistContent({ ctx, content }) {
   // 先在队列中判断没有再请求数据库
   let { logContent = [] } = ctx;
   let index = logContent.findIndex(item => item === content);
@@ -65,7 +65,7 @@ async function sIsExistContent ({ ctx, content }) {
  * @param {String} alias KEY别名 orangeKey 小橘子
  * @return {Object} 是否正确上报
  * */
-async function sReportErrorInfo ({ ctx, logType = "unknown_error", err = {}, pageTitle = "", url = "", alias = "orangeKey" } = {}) {
+async function sReportErrorInfo({ ctx, logType = "unknown_error", err = {}, pageTitle = "", url = "", alias = "orangeKey" } = {}) {
   let requestUrl = "";
   if (ctx.request && ctx.request.url && ctx.request.header) {
     url = `${ctx.request.header.host}${ctx.request.url}`;

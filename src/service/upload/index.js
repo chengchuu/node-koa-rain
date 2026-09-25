@@ -14,7 +14,7 @@ const { assetsBaseUrl } = require("../../config/index");
 const GTTS = require("gtts");
 const say = require("../../utils/say");
 // 上传单个文件
-async function upload (ctx) {
+async function upload(ctx) {
   // 对token进行解码
   console.log("ctx", ctx.state.user);
   const jwtToken = ctx.state.user;
@@ -35,9 +35,9 @@ async function upload (ctx) {
   let lastFileStr = fileStr[0] + "/" + typeStr;
   let fileUrl = afferentTarget ? `${afferentTarget}` : `assets/${lastFileStr}`;
   await mkdir.mkdirs(fileUrl, err => {
-    console.log("mkdirs fileUrl err", err); // 错误的话，直接打印如果地址跟
+    console.log("mkdirs fileUrl err", err);
   });
-  const target = afferentTarget || "assets"; // 上传目录，默认 asset 生产https://i.mazey.net/assets/aaa.jpg  生产和开发区分/web/i.mazey.net/assets/aaa.jpg
+  const target = afferentTarget || "assets";
   let uid = Number(ctx.query.uid) || 0;
   // 通过指纹拿到 uid
   if (!uid) {
@@ -115,7 +115,7 @@ async function upload (ctx) {
 }
 
 // 查询静态资源
-async function getAssets ({ ctx, asset_operator_id }) {
+async function getAssets({ ctx, asset_operator_id }) {
   const jwtToken = ctx.state.user || { data: {} };
   console.log("_ asset_operator_id:", asset_operator_id);
   const limit = Boolean(ctx.query.limit) && Number(ctx.query.limit);
@@ -128,7 +128,7 @@ async function getAssets ({ ctx, asset_operator_id }) {
 }
 
 // 删除记录
-async function sRemoveAsset (ctx) {
+async function sRemoveAsset(ctx) {
   const { asset_id } = ctx.request.body;
   const removeAssetResult = await removeAsset({ asset_id });
   let ret;
@@ -141,7 +141,7 @@ async function sRemoveAsset (ctx) {
 }
 
 // 查询 oss 列表
-async function sGetOSSConfs (ctx) {
+async function sGetOSSConfs(ctx) {
   const uidRes = await sGetUid(ctx);
   // if (uidRes.ret !== 0) return uidRes;
   const {
@@ -153,7 +153,7 @@ async function sGetOSSConfs (ctx) {
 }
 
 // [新]查询 oss 列表
-async function sNewGetOSSConfs ({ token }) {
+async function sNewGetOSSConfs({ token }) {
   if (!token) {
     return err({ message: "缺少 Token" });
   }
@@ -172,7 +172,7 @@ async function sNewGetOSSConfs ({ token }) {
 }
 
 // 创建新 oss 配置
-async function sNewOSSConf (ctx) {
+async function sNewOSSConf(ctx) {
   const uidRes = await sGetUid(ctx);
   const {
     data: { uid },
@@ -185,7 +185,7 @@ async function sNewOSSConf (ctx) {
 }
 
 // [新]创建新 oss 配置
-async function sAddOSSConf ({ ossName, region, accessKeyId, accessKeySecret, bucket, cdnDomain, userName }) {
+async function sAddOSSConf({ ossName, region, accessKeyId, accessKeySecret, bucket, cdnDomain, userName }) {
   if (!ossName) {
     return err({ message: "缺少名字" });
   }
@@ -201,7 +201,7 @@ async function sAddOSSConf ({ ossName, region, accessKeyId, accessKeySecret, buc
   }
   return err({ info: "err_save_oss_conf" });
 }
-async function sSynthesize (ctx, { content }) {
+async function sSynthesize(ctx, { content }) {
   const radioFolderPath = "../../../../video/";
   const fileName = `${format(Date.now(), "yyyyMMdd") + "-" + Math.round(Math.random() * 1e9)}.mp3`;
   const filePath = path.join(__dirname, radioFolderPath) + `${fileName}`;
@@ -216,7 +216,7 @@ async function sSynthesize (ctx, { content }) {
     return err({ info: error });
   }
 }
-async function sSynthesize2 (ctx, { content }) {
+async function sSynthesize2(ctx, { content }) {
   // 公司电脑连接不上
   const radioFolderPath = "../../../../radio/";
   const fileName = `${Date.now()}.mp3`;

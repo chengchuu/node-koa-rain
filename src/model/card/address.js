@@ -55,7 +55,7 @@ const MazeyAddress = sqlIns.define(
     updatedAt: "update_at",
   },
 );
-async function mGetAddressByNumber ({ card_number }) {
+async function mGetAddressByNumber({ card_number }) {
   const ret = await MazeyAddress.findOne({
     where: {
       card_number,
@@ -67,7 +67,7 @@ async function mGetAddressByNumber ({ card_number }) {
   }
   return rsp({ data: ret.dataValues });
 }
-async function mAddAddressByNumber ({ card_number, address_detail, address_user, address_mobile, address_date }) {
+async function mAddAddressByNumber({ card_number, address_detail, address_user, address_mobile, address_date }) {
   const ret = await MazeyAddress.create({
     card_number,
     address_detail,
@@ -81,7 +81,7 @@ async function mAddAddressByNumber ({ card_number, address_detail, address_user,
   return err();
 }
 // 修改地址或者填写单号
-async function mUpdateAddress ({ card_number, address_id, address_detail, address_user, address_mobile, address_date, address_category, address_number }) {
+async function mUpdateAddress({ card_number, address_id, address_detail, address_user, address_mobile, address_date, address_category, address_number }) {
   let ret = "";
   if (address_number) {
     ret = await MazeyAddress.update(
@@ -100,7 +100,6 @@ async function mUpdateAddress ({ card_number, address_id, address_detail, addres
     }
     return rsp({ data: { affectedRows: ret[0] } });
   } else {
-    console.log("我执行了嘛------------", card_number, address_id);
     const ret = await MazeyAddress.update(
       {
         address_detail,
